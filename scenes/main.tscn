@@ -44,8 +44,8 @@ adjustment_saturation = 0.95
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_level"]
 agent_radius = 0.5
-agent_height = 1.8
-agent_max_climb = 0.3
+agent_height = 2.0
+agent_max_climb = 0.25
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")

@@ -164,6 +164,8 @@ Everything is set up so you can replace the placeholders with downloaded art:
 
 1. ~~Prototype: controller, test level, hitscan weapon~~
 2. ~~Core loop: enemy AI, player health and damage, pickups, pause, death/restart~~
-3. Story layer: dialogue (e.g. Dialogic or Dialogue Manager), scripted triggers, checkpoints, save/load
-4. Vertical slice: one fully polished level with real art, sound and story beats
-5. Expand: more levels and weapons, menus, settings, Windows export
+3. Story: see [docs/STORY.md](docs/STORY.md) for the campaign, **STORMLINE**
+4. Flight combat prototype (for the air missions), mission framework, radio dialogue,
+   checkpoints and saving
+5. Vertical slice: Mission 3 "Voice on the Radio", the first combined air + ground mission
+6. Expand: the rest of the campaign, menus, settings, Windows export
