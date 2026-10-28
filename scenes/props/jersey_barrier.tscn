@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop.gd" id="1_prop"]
+[ext_resource type="PackedScene" path="res://assets/models/props/jersey_barrier.glb" id="2_model"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+size = Vector3(3, 0.81, 0.42)
+
+[node name="JerseyBarrier" type="StaticBody3D"]
+script = ExtResource("1_prop")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Collision0" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.405, 0)
+shape = SubResource("shape_0")

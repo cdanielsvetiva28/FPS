@@ -11,6 +11,7 @@ const MISSIONS := [
 
 @onready var buttons: VBoxContainer = $Center/Buttons
 @onready var quit_button: Button = $Center/Buttons/QuitButton
+@onready var graphics_button: Button = $Center/Buttons/GraphicsButton
 @onready var device_label: Label = $DeviceLabel
 
 
@@ -23,6 +24,8 @@ func _ready() -> void:
 		button.text = mission["label"] + ("      COMPLETE" if done else "")
 		button.pressed.connect(Game.play_scene.bind(mission["scene"]))
 	quit_button.pressed.connect(get_tree().quit)
+	graphics_button.pressed.connect(_cycle_graphics)
+	_update_graphics_label()
 	(buttons.get_child(0) as Button).grab_focus()
 
 	Game.input_device_changed.connect(func(_using: bool) -> void: _update_device_label())
@@ -39,3 +42,13 @@ func _update_device_label() -> void:
 		for pad in pads:
 			names.append(Game.controller_display_name(pad))
 		device_label.text = "Controller: %s" % ", ".join(names)
+
+
+func _cycle_graphics() -> void:
+	Game.set_graphics_quality(((Game.graphics_quality + 1) % 3) as Game.Quality)
+	_update_graphics_label()
+
+
+func _update_graphics_label() -> void:
+	var names := ["LOW", "MEDIUM", "HIGH"]
+	graphics_button.text = "Graphics: %s" % names[Game.graphics_quality]

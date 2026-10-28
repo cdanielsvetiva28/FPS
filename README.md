@@ -9,6 +9,21 @@ The game starts on a main menu with two test missions (completed missions are ma
 - **AIR: "First Light"**: a preview of Mission 2
 - **GROUND: "Compound Raid"**: breach, clear, download the pylon data, extract
 
+## Graphics
+
+The main menu has a **Graphics** setting (Low / Medium / High, saved between sessions):
+
+| | Low | Medium | High |
+|---|---|---|---|
+| Resolution | 75% + FSR upscaling | 100% | 100% |
+| Anti-aliasing | FXAA | MSAA 2x | MSAA 2x |
+| Ambient occlusion, glow | off | on | on |
+| Indirect light (SSIL) | off | off | on |
+| Global illumination (SDFGI) and light shafts (volumetric fog) | off | off | on (ground level) |
+| Shadows | hard | soft | soft, high resolution |
+
+If the game stutters, drop to Medium first.
+
 ## Controllers (PS4 / PS5 / Xbox)
 
 Plug in a DualShock 4, DualSense or Xbox controller at any time, over USB or Bluetooth.
@@ -71,8 +86,10 @@ Shoot down the first wave and a second arrives with a Stormcrow ace.
 - **HUD:** speed, altitude, throttle, ammo, airframe health, target brackets, a lock ring
   that closes as the lock builds, an arrow to off-screen targets, radar, MISSILE /
   PULL UP / STALL warnings, and radio chatter subtitles
-- **World:** a procedural island with mountains, sea and clouds, plus Weatherline pylons
-  with blinking beacons
+- **World:** a procedural island whose terrain shader blends grass, sand, rock and snow
+  by height and slope; animated sea with turquoise shallows and shoreline foam; pine
+  forests; soft billboard clouds; 400 m Weatherline pylons with blinking beacons;
+  wingtip vapour trails in hard turns
 - **Feel:** chase and cockpit cameras, FOV widens with speed, engine sound follows
   throttle, Doppler on passing jets, smoke trails, explosions
 
@@ -119,8 +136,10 @@ five hostiles to win the area.
   - Drop ammo or health when killed
 - **Pickups:** health packs, and ammo boxes that give every weapon a magazine
   (ignored if you're already full)
-- **Art & audio:** textured concrete, block walls, metal and wooden crates, a detailed
-  soldier model, and synthesized sound effects for everything
+- **Art & audio:** golden-hour lighting with long shadows, light shafts and bounced light;
+  Blender-built props (shipping containers, concrete barriers, sandbag walls, oil drums, a
+  guard tower, chain-link fencing, floodlights); hills, pine trees and a 45 m Weatherline
+  pylon beyond the walls; textured surfaces; synthesized sound effects for everything
 - **HUD:** health bar, ammo, crosshair, hit marker (red on kill), red damage flash with an
   arrow toward the attacker, low-health tint, objective counter, pickup messages
 - **Pause menu** (Esc or alt-tab), and a death screen with click-to-restart
@@ -191,7 +210,8 @@ assets/
   textures/                Generated PBR textures (albedo + normal maps)
   materials/               Materials for the level, guns and enemy
   sounds/                  Generated sound effects (.wav)
-tools/                     Python scripts that generate textures, sounds and (via Blender) jets
+shaders/                   terrain.gdshader (flight terrain), water.gdshader (sea)
+tools/                     Python scripts that generate textures, sounds and (via Blender) jets and props
 ```
 
 ## Tuning
@@ -251,6 +271,15 @@ Or open `tools/blender/build_jets.py` in Blender's **Scripting** tab and press
 fighter) and `assets/models/jet_sevrin.glb` (the enemy delta-wing with canards).
 You can also open the `.glb` files in Blender and edit them by hand. Keep the part
 names `Afterburner_*`, `Missile_L`, `Missile_R` and `Canopy`, since the game looks them up.
+
+### Props (Blender)
+
+`tools/blender/build_props.py` builds the environment props (containers, barriers,
+sandbags, drums, guard tower, fence, light pole, rocks, pylon, pine tree) into
+`assets/models/props/`. Each has a ready-to-place scene in `scenes/props/` with
+collision. The `Prop` script layers textures (grime, concrete, burlap, wood, rock) onto
+the models by material name, so the Blender files stay simple. To add a prop, build it
+in the script, export it, and copy one of the `scenes/props/*.tscn` files.
 
 ### Swapping in real assets
 

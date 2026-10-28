@@ -1,0 +1,65 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop.gd" id="1_prop"]
+[ext_resource type="PackedScene" path="res://assets/models/props/guard_tower.glb" id="2_model"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+size = Vector3(3.4, 0.15, 3.4)
+
+[sub_resource type="BoxShape3D" id="shape_1"]
+size = Vector3(0.25, 4, 0.25)
+
+[sub_resource type="BoxShape3D" id="shape_2"]
+size = Vector3(0.25, 4, 0.25)
+
+[sub_resource type="BoxShape3D" id="shape_3"]
+size = Vector3(0.25, 4, 0.25)
+
+[sub_resource type="BoxShape3D" id="shape_4"]
+size = Vector3(0.25, 4, 0.25)
+
+[sub_resource type="BoxShape3D" id="shape_5"]
+size = Vector3(3.3, 1, 0.1)
+
+[sub_resource type="BoxShape3D" id="shape_6"]
+size = Vector3(0.1, 1, 3.3)
+
+[sub_resource type="BoxShape3D" id="shape_7"]
+size = Vector3(0.1, 1, 3.3)
+
+[node name="GuardTower" type="StaticBody3D"]
+script = ExtResource("1_prop")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Collision0" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+shape = SubResource("shape_0")
+
+[node name="Collision1" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.55, 2, -1.55)
+shape = SubResource("shape_1")
+
+[node name="Collision2" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.55, 2, 1.55)
+shape = SubResource("shape_2")
+
+[node name="Collision3" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 2, -1.55)
+shape = SubResource("shape_3")
+
+[node name="Collision4" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 2, 1.55)
+shape = SubResource("shape_4")
+
+[node name="Collision5" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.6, -1.65)
+shape = SubResource("shape_5")
+
+[node name="Collision6" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 4.6, 0)
+shape = SubResource("shape_6")
+
+[node name="Collision7" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 4.6, 0)
+shape = SubResource("shape_7")

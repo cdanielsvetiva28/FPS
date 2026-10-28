@@ -18,6 +18,8 @@ enum Team { HALVARD, SEVRIN }
 @export var max_health := 100.0
 ## Bullets and missiles hit within this distance of the aircraft's centre.
 @export var hit_radius := 9.0
+## Distance from the centreline to each wingtip, for vapour trails.
+@export var wingtip_span := 5.5
 
 @export_group("Flight Model")
 ## Below this the aircraft stalls and the nose drops.
@@ -40,6 +42,7 @@ var is_destroyed := false
 
 var _afterburners: Array[Node3D] = []
 var _damage_smoke: CPUParticles3D
+var _vapor_trails: Array[CPUParticles3D] = []
 
 
 func _ready() -> void:
@@ -53,6 +56,11 @@ func _ready() -> void:
 			_afterburners.append(node as Node3D)
 	_damage_smoke = _make_damage_smoke()
 	add_child(_damage_smoke)
+	for side: float in [-1.0, 1.0]:
+		var trail := _make_vapor_trail()
+		trail.position = Vector3(side * wingtip_span, 0.1, 3.5)
+		add_child(trail)
+		_vapor_trails.append(trail)
 
 
 ## Applies stick inputs (each -1..1) and moves the aircraft. Call once per frame.
@@ -85,6 +93,10 @@ func fly(pitch: float, roll: float, yaw: float, delta: float) -> void:
 	velocity = -global_basis.z * speed
 	global_position += velocity * delta
 	_update_afterburners()
+	# Wingtip vapour in hard, fast turns.
+	var pulling_hard := absf(pitch) > 0.55 and speed > 170.0
+	for trail in _vapor_trails:
+		trail.emitting = pulling_hard
 
 
 ## `source` is whoever fired. If it has a `notify_hit(killed)` method (the
@@ -135,6 +147,35 @@ func _update_afterburners() -> void:
 	for burner in _afterburners:
 		burner.visible = flame > 0.05
 		burner.scale = Vector3(1.0, 1.0, lerpf(0.3, 1.0, flame))
+
+
+func _make_vapor_trail() -> CPUParticles3D:
+	var trail := CPUParticles3D.new()
+	trail.emitting = false
+	trail.amount = 60
+	trail.lifetime = 0.7
+	trail.local_coords = false
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.35
+	mesh.height = 0.7
+	mesh.radial_segments = 6
+	mesh.rings = 3
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.vertex_color_use_as_albedo = true
+	mesh.material = material
+	trail.mesh = mesh
+	trail.gravity = Vector3.ZERO
+	trail.initial_velocity_min = 0.0
+	trail.initial_velocity_max = 0.5
+	trail.scale_amount_min = 0.6
+	trail.scale_amount_max = 1.2
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1.0, 1.0, 1.0, 0.55))
+	ramp.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+	trail.color_ramp = ramp
+	return trail
 
 
 func _make_damage_smoke() -> CPUParticles3D:

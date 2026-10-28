@@ -259,6 +259,126 @@ def muzzle_flash() -> None:
     print("wrote muzzle_flash")
 
 
+def save_rgba(name: str, rgba: np.ndarray) -> None:
+    OUT.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(np.clip(rgba, 0, 255).astype(np.uint8), "RGBA").save(OUT / f"{name}.png", optimize=True)
+    print(f"wrote {name}")
+
+
+def grime() -> None:
+    """Near-white dirt/rust overlay, multiplied over painted props."""
+    blotch = fractal_noise(SIZE, 2.4)
+    speck = fractal_noise(SIZE, 0.6)
+    y = np.mgrid[0:SIZE, 0:SIZE][0] / SIZE
+    streaks = stretched_noise(SIZE, 32, 1.0).T  # vertical rain streaks
+    dirt = np.clip(0.55 * blotch + 0.25 * streaks + 0.2 * speck, 0, 1)
+    t = 1.0 - 0.45 * np.clip((dirt - 0.45) * 2.2, 0, 1)
+    albedo = np.stack([t * 255, t * 246, t * 232], axis=-1)
+    rust = (fractal_noise(SIZE, 1.6) > 0.72) & (blotch > 0.5)
+    albedo[rust] = albedo[rust] * np.array([0.85, 0.62, 0.45])
+    save("grime", albedo, 0.3 * blotch + 0.3 * speck + 0.1 * y, 1.2)
+
+
+def wood_planks() -> None:
+    grain = stretched_noise(SIZE, 24, 1.2)
+    rings = 0.5 + 0.5 * np.sin(grain * 38.0)
+    t = normalize(0.6 * grain + 0.4 * rings)
+    albedo = colorize(t, (150, 115, 80), (230, 200, 160))
+    y = np.mgrid[0:SIZE, 0:SIZE][0]
+    seam = (y % (SIZE // 4)) < 3
+    albedo[seam] *= 0.45
+    height = 0.4 * grain
+    height[seam] -= 1.0
+    save("wood_planks", albedo, height, 2.0)
+
+
+def fabric() -> None:
+    """Coarse burlap weave."""
+    y, x = np.mgrid[0:SIZE, 0:SIZE]
+    weave = (np.sin(x * 2 * np.pi / 6) * np.sin(y * 2 * np.pi / 6))
+    fuzz = fractal_noise(SIZE, 1.0)
+    t = normalize(0.5 * weave + 0.5 * fuzz)
+    albedo = colorize(t, (180, 170, 150), (245, 238, 220))
+    save("fabric", albedo, weave * 0.6 + fuzz * 0.4, 1.5)
+
+
+def rock() -> None:
+    base = fractal_noise(SIZE, 1.9)
+    cracks = np.abs(fractal_noise(SIZE, 1.4) - 0.5) < 0.012
+    strata = 0.5 + 0.5 * np.sin(np.mgrid[0:SIZE, 0:SIZE][0] * 0.08 + base * 6)
+    t = normalize(0.65 * base + 0.35 * strata)
+    albedo = colorize(t, (95, 90, 84), (168, 160, 150))
+    albedo[cracks] *= 0.4
+    height = base * 1.0 + strata * 0.3
+    height[cracks] -= 0.8
+    save("rock", albedo, height, 3.0)
+
+
+def grass() -> None:
+    blades = fractal_noise(SIZE, 0.5)
+    patches = fractal_noise(SIZE, 2.6)
+    t = normalize(0.5 * blades + 0.5 * patches)
+    albedo = colorize(t, (52, 78, 32), (120, 150, 62))
+    dry = patches > 0.7
+    albedo[dry] = albedo[dry] * 0.6 + np.array([150, 135, 80]) * 0.4
+    save("grass", albedo, blades * 0.6 + patches * 0.4, 1.5)
+
+
+def sand() -> None:
+    ripples = 0.5 + 0.5 * np.sin(np.mgrid[0:SIZE, 0:SIZE][1] * 0.15 + fractal_noise(SIZE, 2.2) * 8)
+    grain = fractal_noise(SIZE, 0.4)
+    t = normalize(0.4 * ripples + 0.6 * grain)
+    albedo = colorize(t, (176, 158, 118), (226, 210, 168))
+    save("sand", albedo, ripples * 0.6 + grain * 0.3, 1.5)
+
+
+def snow() -> None:
+    drift = fractal_noise(SIZE, 2.2)
+    sparkle = fractal_noise(SIZE, 0.3)
+    t = normalize(0.7 * drift + 0.3 * sparkle)
+    albedo = colorize(t, (205, 214, 228), (250, 252, 255))
+    save("snow", albedo, drift, 1.0)
+
+
+def water_normal() -> None:
+    """Tileable small-wave normal map (the water shader scrolls two copies)."""
+    waves = fractal_noise(SIZE, 2.0) * 0.7 + fractal_noise(SIZE, 1.2) * 0.3
+    OUT.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(normal_map(waves, 6.0)).save(OUT / "water_normal.png", optimize=True)
+    print("wrote water_normal")
+
+
+def chainlink() -> None:
+    """Diamond chain-link mesh with transparency, one tile = 4 x 4 diamonds."""
+    size = 256
+    y, x = np.mgrid[0:size, 0:size].astype(float)
+    period = size / 4
+    u = (x + y) % period
+    v = (x - y) % period
+    wire = (np.minimum(u, period - u) < 2.2) | (np.minimum(v, period - v) < 2.2)
+    rgba = np.zeros((size, size, 4))
+    rgba[..., :3] = 165
+    rgba[wire, 3] = 255
+    save_rgba("chainlink", rgba)
+
+
+def cloud_puff() -> None:
+    """Soft round cloud sprite with a lumpy edge and a slightly darker base."""
+    size = 256
+    y, x = np.mgrid[0:size, 0:size] - size / 2 + 0.5
+    r = np.sqrt(x**2 + y**2) / (size / 2)
+    lumps = blur(fractal_noise(size, 3.2, seed=3), 3)
+    edge = np.clip((1.0 - r) * 1.8 + (lumps - 0.5) * 1.2, 0, 1)
+    alpha = blur(edge, 2) ** 1.6
+    shade = 0.82 + 0.18 * np.clip(-y / (size / 2) + 0.4, 0, 1)
+    rgba = np.zeros((size, size, 4))
+    rgba[..., 0] = 255 * shade
+    rgba[..., 1] = 255 * shade
+    rgba[..., 2] = 255 * np.clip(shade + 0.03, 0, 1)
+    rgba[..., 3] = alpha * 255
+    save_rgba("cloud_puff", rgba)
+
+
 if __name__ == "__main__":
     concrete_floor()
     block_wall()
@@ -266,3 +386,13 @@ if __name__ == "__main__":
     wood_crate()
     bullet_hole()
     muzzle_flash()
+    grime()
+    wood_planks()
+    fabric()
+    rock()
+    grass()
+    sand()
+    snow()
+    water_normal()
+    chainlink()
+    cloud_puff()

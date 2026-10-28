@@ -105,6 +105,16 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 text = "GROUND — \"Compound Raid\""
 alignment = 0
 
+[node name="GraphicsButton" type="Button" parent="Center/Buttons"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+text = "Graphics: HIGH"
+alignment = 0
+
 [node name="QuitButton" type="Button" parent="Center/Buttons"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24

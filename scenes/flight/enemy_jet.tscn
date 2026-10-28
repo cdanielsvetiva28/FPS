@@ -7,6 +7,7 @@
 script = ExtResource("1_ai")
 display_name = "BANDIT"
 team = 1
+wingtip_span = 6.1
 
 
 [node name="Model" parent="." instance=ExtResource("2_model")]

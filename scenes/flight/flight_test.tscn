@@ -8,6 +8,10 @@
 [ext_resource type="PackedScene" path="res://scenes/flight/player_jet.tscn" id="6_player"]
 [ext_resource type="PackedScene" path="res://scenes/flight/ally_jet.tscn" id="7_ally"]
 [ext_resource type="PackedScene" path="res://scenes/flight/flight_hud.tscn" id="8_hud"]
+[ext_resource type="Shader" path="res://shaders/water.gdshader" id="9_water"]
+[ext_resource type="Texture2D" path="res://assets/textures/water_normal.png" id="10_waves"]
+[ext_resource type="Script" path="res://scripts/flight/forest.gd" id="11_forest"]
+[ext_resource type="Script" path="res://scripts/quality_environment.gd" id="12_quality"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.22, 0.4, 0.68, 1)
@@ -33,19 +37,20 @@ fog_density = 0.00012
 fog_aerial_perspective = 0.5
 fog_sky_affect = 0.3
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sea"]
-albedo_color = Color(0.04, 0.13, 0.2, 1)
-metallic = 0.3
-roughness = 0.12
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sea"]
+render_priority = 0
+shader = ExtResource("9_water")
+shader_parameter/wave_normals = ExtResource("10_waves")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
-material = SubResource("StandardMaterial3D_sea")
+material = SubResource("ShaderMaterial_sea")
 size = Vector2(60000, 60000)
 
 [node name="FlightTest" type="Node3D"]
 script = ExtResource("1_mission")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+script = ExtResource("12_quality")
 environment = SubResource("Environment_flight")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
@@ -60,6 +65,9 @@ script = ExtResource("2_terrain")
 
 [node name="Sea" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_sea")
+
+[node name="Forest" type="Node3D" parent="."]
+script = ExtResource("11_forest")
 
 [node name="Clouds" type="MultiMeshInstance3D" parent="."]
 script = ExtResource("3_clouds")

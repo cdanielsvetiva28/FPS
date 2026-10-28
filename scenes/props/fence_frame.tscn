@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop.gd" id="1_prop"]
+[ext_resource type="PackedScene" path="res://assets/models/props/fence_frame.glb" id="2_model"]
+[ext_resource type="Texture2D" path="res://assets/textures/chainlink.png" id="3_chainlink"]
+
+[sub_resource type="StandardMaterial3D" id="chainlink_material"]
+transparency = 2
+alpha_scissor_threshold = 0.5
+cull_mode = 2
+albedo_color = Color(0.75, 0.77, 0.78, 1)
+albedo_texture = ExtResource("3_chainlink")
+metallic = 0.7
+roughness = 0.45
+uv1_scale = Vector3(12, 9, 1)
+
+[sub_resource type="QuadMesh" id="chainlink_quad"]
+material = SubResource("chainlink_material")
+size = Vector2(3, 2.25)
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+size = Vector3(3, 2.5, 0.1)
+
+[node name="FenceSegment" type="StaticBody3D"]
+script = ExtResource("1_prop")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Collision0" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+shape = SubResource("shape_0")
+
+[node name="ChainLink" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+cast_shadow = 0
+mesh = SubResource("chainlink_quad")

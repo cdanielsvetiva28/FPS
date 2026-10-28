@@ -12,6 +12,9 @@ signal message_posted(text: String)
 signal input_device_changed(using_controller: bool)
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
+const SETTINGS_PATH := "user://settings.cfg"
+
+enum Quality { LOW, MEDIUM, HIGH }
 
 ## Default keyboard bindings. Any that are missing from the Input Map are added
 ## at startup, so the game stays playable even if the project's map is broken.
@@ -116,6 +119,9 @@ var active_joypad := -1
 ## The Interactable whose prompt is showing, if any (so the shared
 ## Square/X button interacts instead of reloading).
 var interaction_focus: Node = null
+## Graphics preset, applied by each scene's WorldEnvironment (see
+## quality_environment.gd). Saved in user://settings.cfg.
+var graphics_quality := Quality.HIGH
 
 var _notice_layer: CanvasLayer
 var _notice_label: Label
@@ -125,6 +131,7 @@ var _notice_tween: Tween
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_ensure_input_bindings()
+	_load_settings()
 	_build_notice_ui()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	# A controller that was already plugged in at launch.
@@ -200,6 +207,25 @@ func play_scene(path: String) -> void:
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().change_scene_to_file(path)
+
+
+# --- Settings --------------------------------------------------------------------
+
+func set_graphics_quality(quality: Quality) -> void:
+	graphics_quality = quality
+	_save_settings()
+
+
+func _load_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SETTINGS_PATH) == OK:
+		graphics_quality = clampi(int(config.get_value("graphics", "quality", Quality.HIGH)), 0, 2) as Quality
+
+
+func _save_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value("graphics", "quality", graphics_quality)
+	config.save(SETTINGS_PATH)
 
 
 # --- Controllers ---------------------------------------------------------------

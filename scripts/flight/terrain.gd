@@ -79,14 +79,11 @@ func _build_mesh() -> void:
 	var array_mesh := ArrayMesh.new()
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
-	var material := StandardMaterial3D.new()
-	material.vertex_color_use_as_albedo = true
-	material.roughness = 0.95
-	# Close-up detail; the vertex colours give the big picture.
-	material.albedo_texture = load("res://assets/textures/concrete_floor_albedo.png")
-	material.uv1_triplanar = true
-	material.uv1_world_triplanar = true
-	material.uv1_scale = Vector3.ONE * 0.03
+	# Grass/sand/rock/snow blended by height and slope (shaders/terrain.gdshader).
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/terrain.gdshader")
+	for layer in ["grass", "sand", "rock", "snow"]:
+		material.set_shader_parameter(layer + "_texture", load("res://assets/textures/%s_albedo.png" % layer))
 	array_mesh.surface_set_material(0, material)
 	mesh = array_mesh
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

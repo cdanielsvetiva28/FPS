@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop.gd" id="1_prop"]
+[ext_resource type="PackedScene" path="res://assets/models/props/light_pole.glb" id="2_model"]
+
+[sub_resource type="CylinderShape3D" id="shape_0"]
+radius = 0.15
+height = 7
+
+[node name="LightPole" type="StaticBody3D"]
+script = ExtResource("1_prop")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Collision0" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+shape = SubResource("shape_0")
+
+[node name="Lamp" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 6.85, -1.35)
+light_color = Color(1, 0.88, 0.68, 1)
+light_energy = 4.0
+spot_range = 18.0
+spot_angle = 55.0
