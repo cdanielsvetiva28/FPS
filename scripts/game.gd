@@ -8,6 +8,8 @@ signal paused_changed(paused: bool)
 signal noise_made(position: Vector3, radius: float)
 signal message_posted(text: String)
 
+const MENU_SCENE := "res://scenes/main_menu.tscn"
+
 ## Default keyboard bindings. Any that are missing from the Input Map are added
 ## at startup, so the game stays playable even if the project's map is broken.
 const DEFAULT_KEYS := {
@@ -26,12 +28,24 @@ const DEFAULT_KEYS := {
 	"last_weapon": [KEY_Q],
 	"pause": [KEY_ESCAPE],
 	"toggle_fullscreen": [KEY_F11],
+	"menu": [KEY_M],
+	# Flight
+	"throttle_up": [KEY_W],
+	"throttle_down": [KEY_S],
+	"yaw_left": [KEY_A],
+	"yaw_right": [KEY_D],
+	"roll_left": [KEY_Q],
+	"roll_right": [KEY_E],
+	"flares": [KEY_F],
+	"switch_target": [KEY_SPACE, KEY_TAB],
+	"camera_toggle": [KEY_V],
 }
 const DEFAULT_MOUSE_BUTTONS := {
 	"fire": [MOUSE_BUTTON_LEFT],
 	"aim": [MOUSE_BUTTON_RIGHT],
 	"next_weapon": [MOUSE_BUTTON_WHEEL_DOWN],
 	"previous_weapon": [MOUSE_BUTTON_WHEEL_UP],
+	"fire_missile": [MOUSE_BUTTON_RIGHT],
 }
 
 
@@ -43,8 +57,13 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_fullscreen"):
 		_toggle_fullscreen()
+	elif not _can_pause():
+		return
 	elif event.is_action_pressed("pause"):
 		set_paused(not get_tree().paused)
+		get_viewport().set_input_as_handled()
+	elif get_tree().paused and event.is_action_pressed("menu"):
+		go_to_menu()
 		get_viewport().set_input_as_handled()
 	elif get_tree().paused and event is InputEventMouseButton and event.is_pressed():
 		set_paused(false)
@@ -53,7 +72,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _notification(what: int) -> void:
 	# Pause when the window loses focus (alt-tab, clicking the editor, ...).
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and not get_tree().paused:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and not get_tree().paused \
+			and _can_pause():
 		set_paused(true)
 
 
@@ -67,6 +87,31 @@ func restart() -> void:
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().reload_current_scene()
+
+
+func go_to_menu() -> void:
+	get_tree().paused = false
+	paused_changed.emit(false)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().change_scene_to_file(MENU_SCENE)
+
+
+func play_scene(path: String) -> void:
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	get_tree().change_scene_to_file(path)
+
+
+## Returns a copy of a WAV stream that loops over its whole length.
+func looping(stream: AudioStream) -> AudioStream:
+	var wav := stream as AudioStreamWAV
+	if wav == null:
+		return stream
+	var copy := wav.duplicate() as AudioStreamWAV
+	copy.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	copy.loop_begin = 0
+	copy.loop_end = int(copy.get_length() * copy.mix_rate)
+	return copy
 
 
 func make_noise(position: Vector3, radius: float) -> void:
@@ -105,6 +150,12 @@ func play_sound_at(stream: AudioStream, at: Vector3, volume_db := 0.0, pitch_var
 	scene.add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()
+
+
+## Menus (scenes in the "menu" group) don't pause.
+func _can_pause() -> bool:
+	var scene := get_tree().current_scene
+	return scene != null and not scene.is_in_group("menu")
 
 
 func _toggle_fullscreen() -> void:

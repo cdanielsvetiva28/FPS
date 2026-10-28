@@ -1,0 +1,282 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/flight/flight_hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0, 0.1, 0.03, 0.45)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 1, 0.6, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.55, 1, 0.6, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_radio"]
+bg_color = Color(0, 0.05, 0.02, 0.6)
+border_width_left = 3
+border_color = Color(0.55, 1, 0.6, 0.8)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+
+[node name="FlightHUD" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_hud")
+
+[node name="Overlay" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SpeedLabel" type="Label" parent="."]
+anchor_left = 0
+anchor_top = 0.5
+anchor_right = 0
+anchor_bottom = 0.5
+offset_left = 60
+offset_top = -40
+offset_right = 220
+offset_bottom = 40
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "SPEED\n0"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="AltitudeLabel" type="Label" parent="."]
+anchor_left = 1
+anchor_top = 0.5
+anchor_right = 1
+anchor_bottom = 0.5
+offset_left = -220
+offset_top = -40
+offset_right = -60
+offset_bottom = 40
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "ALT\n0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ThrottleBar" type="ProgressBar" parent="."]
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 30.0
+offset_top = -60.0
+offset_right = 44.0
+offset_bottom = 60.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+fill_mode = 3
+value = 50.0
+show_percentage = false
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -60.0
+offset_right = 300.0
+offset_bottom = -40.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+value = 100.0
+show_percentage = false
+
+[node name="HealthCaption" type="Label" parent="."]
+anchor_left = 0
+anchor_top = 1
+anchor_right = 0
+anchor_bottom = 1
+offset_left = 40
+offset_top = -88
+offset_right = 300
+offset_bottom = -62
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "AIRFRAME"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="WeaponsLabel" type="Label" parent="."]
+anchor_left = 1
+anchor_top = 1
+anchor_right = 1
+anchor_bottom = 1
+offset_left = -260
+offset_top = -130
+offset_right = -40
+offset_bottom = -40
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "GUN  0\nMSL  0\nFLR  0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0
+anchor_right = 0.5
+anchor_bottom = 0
+offset_left = -300
+offset_top = 20
+offset_right = 300
+offset_bottom = 52
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ObjectiveLabel" type="Label" parent="."]
+anchor_left = 1
+anchor_top = 0
+anchor_right = 1
+anchor_bottom = 0
+offset_left = -520
+offset_top = 20
+offset_right = -30
+offset_bottom = 52
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WarningLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0
+anchor_right = 0.5
+anchor_bottom = 0
+offset_left = -300
+offset_top = 90
+offset_right = 300
+offset_bottom = 200
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.25, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 30
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 0
+
+[node name="RadioPanel" type="PanelContainer" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -210.0
+offset_right = 620.0
+offset_bottom = -110.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_radio")
+
+[node name="Lines" type="VBoxContainer" parent="RadioPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Callsign" type="Label" parent="RadioPanel/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 16
+text = "SKYWARD"
+
+[node name="Text" type="Label" parent="RadioPanel/Lines"]
+custom_minimum_size = Vector2(540, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = ""
+autowrap_mode = 3
+
+[node name="BannerLabel" type="Label" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500
+offset_top = -120
+offset_right = 500
+offset_bottom = -50
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 52
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PromptLabel" type="Label" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400
+offset_top = -40
+offset_right = 400
+offset_bottom = 0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PauseScreen" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Text" type="Label" parent="PauseScreen"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -220.0
+offset_right = 450.0
+offset_bottom = 220.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "PAUSED
+Click or press Esc to resume      M - main menu
+
+Mouse - pitch and roll      Q / E - roll      A / D - rudder (yaw)
+W / S - throttle (full throttle = afterburner)
+Left click - cannon      Right click - missile (lock on first)
+Space / Tab - switch target      F - flares
+V - cockpit / chase camera      F11 - fullscreen"
+horizontal_alignment = 1
+vertical_alignment = 1

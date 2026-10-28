@@ -1,9 +1,48 @@
-# FPS
+# STORMLINE
 
-A single-player, story-driven first-person shooter built with **Godot 4.7** and **GDScript**.
-Windows only, no online play.
+A single-player, story-driven shooter that crosses Call of Duty-style ground combat
+with Ace Combat-style air combat. Built with **Godot 4.7** and **GDScript**.
+Windows only, no online play. The story is in [docs/STORY.md](docs/STORY.md).
 
-## Current state: core combat loop
+The game starts on a main menu with two test missions:
+
+- **AIR: Flight Test "First Light"**: a preview of Mission 2
+- **GROUND: Combat Test "The Compound"**
+
+## Air combat
+
+Wren and Lantern Lead (an AI wingman) intercept a Sevrin fighter sweep over an island.
+Shoot down the first wave and a second arrives with a Stormcrow ace.
+
+- **Arcade flight model:** mouse flight via a self-centring virtual stick, throttle with
+  afterburner, stalls at low speed, climbing bleeds speed and diving builds it
+- **Weapons:** cannon with glowing tracers; lock-on missiles from two alternating wing
+  pylons (lock tone, then a solid tone when locked); flares that decoy incoming missiles
+- **AI pilots** (enemies and your wingman share one AI): patrol, chase with lead pursuit,
+  fire missiles and guns, break hard and pop flares when a missile is on them, and
+  always avoid terrain
+- **HUD:** speed, altitude, throttle, ammo, airframe health, target brackets, a lock ring
+  that closes as the lock builds, an arrow to off-screen targets, radar, MISSILE /
+  PULL UP / STALL warnings, and radio chatter subtitles
+- **World:** a procedural island with mountains, sea and clouds, plus Weatherline pylons
+  with blinking beacons
+- **Feel:** chase and cockpit cameras, FOV widens with speed, engine sound follows
+  throttle, Doppler on passing jets, smoke trails, explosions
+
+| Action | Key |
+|---|---|
+| Pitch and roll | Mouse |
+| Roll | Q / E |
+| Rudder (yaw) | A / D |
+| Throttle | W / S (full throttle = afterburner) |
+| Cannon | Left mouse |
+| Missile | Right mouse (lock on first for a guided shot) |
+| Switch target | Space or Tab |
+| Flares | F |
+| Cockpit / chase camera | V |
+| Pause / main menu | Esc, then M |
+
+## Ground combat
 
 A walled compound split into a spawn yard and an enemy-held area. Clear out
 five hostiles to win the area.
@@ -56,7 +95,7 @@ five hostiles to win the area.
 | Aim down sights | Right mouse |
 | Reload | R |
 | Switch weapon | 1 / 2 / 3, mouse wheel, Q for last weapon |
-| Pause | Esc (click or Esc to resume) |
+| Pause | Esc (click or Esc to resume; M for main menu) |
 | Fullscreen | F11 |
 
 Rebind keys under **Project → Project Settings → Input Map**. At startup `Game` adds any
@@ -67,8 +106,11 @@ to Godot's **Output** panel.
 
 ```
 project.godot              Project settings, input map, autoloads
+docs/STORY.md              The story bible
 scenes/
-  main.tscn                Test level (entry scene)
+  main_menu.tscn           Title screen (entry scene)
+  flight/                  Flight test mission, jets, missile, explosion, flight HUD
+  main.tscn                Ground test level
   player.tscn              Player body, camera and weapon holder
   enemy.tscn               Enemy soldier
   hud.tscn                 On-screen UI, pause and death screens
@@ -87,11 +129,21 @@ scripts/
   pickup.gd                Health/ammo pickups
   hud.gd, crosshair.gd     HUD and dynamic crosshair
   target.gd                Practice dummy
+  main_menu.gd             Title screen
+  flight/aircraft.gd       Shared flight model, health, destruction
+  flight/player_jet.gd     Player controls, cannon, missiles, flares, cameras
+  flight/ai_jet.gd         AI pilot for enemies and wingmen
+  flight/missile.gd        Guided missile; flare.gd: decoy flares
+  flight/bullet_manager.gd All cannon rounds, simulated and drawn together
+  flight/terrain.gd        Procedural island; clouds.gd, landmarks.gd
+  flight/flight_hud.gd     Flight HUD and radio subtitles
+  flight/flight_mission.gd The "First Light" test mission: waves, radio, win/lose
 assets/
+  models/                  Jets exported from Blender (.glb)
   textures/                Generated PBR textures (albedo + normal maps)
   materials/               Materials for the level, guns and enemy
   sounds/                  Generated sound effects (.wav)
-tools/                     Python scripts that generate the textures and sounds
+tools/                     Python scripts that generate textures, sounds and (via Blender) jets
 ```
 
 ## Tuning
@@ -137,6 +189,21 @@ python tools/generate_sounds.py
 Godot re-imports changed files automatically. (`tools/` has a `.gdignore`, so Godot
 doesn't try to import the scripts.)
 
+### Jets (Blender)
+
+The jets are built by a Blender Python script, so they're easy to modify: change
+the numbers (wing shapes, fuselage sections, colours) and re-run it.
+
+```
+blender --background --python tools/blender/build_jets.py
+```
+
+Or open `tools/blender/build_jets.py` in Blender's **Scripting** tab and press
+**Run Script**. It writes `assets/models/jet_halvard.glb` (the player's twin-tail
+fighter) and `assets/models/jet_sevrin.glb` (the enemy delta-wing with canards).
+You can also open the `.glb` files in Blender and edit them by hand. Keep the part
+names `Afterburner_*`, `Missile_L`, `Missile_R` and `Canopy`, since the game looks them up.
+
 ### Swapping in real assets
 
 Everything is set up so you can replace the placeholders with downloaded art:
@@ -164,8 +231,8 @@ Everything is set up so you can replace the placeholders with downloaded art:
 
 1. ~~Prototype: controller, test level, hitscan weapon~~
 2. ~~Core loop: enemy AI, player health and damage, pickups, pause, death/restart~~
-3. Story: see [docs/STORY.md](docs/STORY.md) for the campaign, **STORMLINE**
-4. Flight combat prototype (for the air missions), mission framework, radio dialogue,
-   checkpoints and saving
-5. Vertical slice: Mission 3 "Voice on the Radio", the first combined air + ground mission
-6. Expand: the rest of the campaign, menus, settings, Windows export
+3. ~~Story: see [docs/STORY.md](docs/STORY.md)~~
+4. ~~Flight combat prototype~~
+5. Mission framework: objectives, checkpoints, saving, radio dialogue for ground missions
+6. Vertical slice: Mission 3 "Voice on the Radio", the first combined air + ground mission
+7. Expand: the rest of the campaign, menus, settings, Windows export

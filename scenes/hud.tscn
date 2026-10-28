@@ -274,7 +274,7 @@ text = "WASD / arrows - move      Shift - sprint      Space - jump
 Ctrl - crouch (hold)      C - crouch (toggle)
 Left click - fire      Right click - aim      R - reload
 1 / 2 / 3 or mouse wheel - switch weapon      Q - last weapon
-Esc - pause      F11 - fullscreen"
+Esc - pause      M (while paused) - main menu      F11 - fullscreen"
 horizontal_alignment = 1
 
 [node name="DeathScreen" type="Control" parent="."]

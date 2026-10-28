@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/flight/flight_mission.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/flight/terrain.gd" id="2_terrain"]
+[ext_resource type="Script" path="res://scripts/flight/clouds.gd" id="3_clouds"]
+[ext_resource type="Script" path="res://scripts/flight/landmarks.gd" id="4_landmarks"]
+[ext_resource type="Script" path="res://scripts/flight/bullet_manager.gd" id="5_bullets"]
+[ext_resource type="PackedScene" path="res://scenes/flight/player_jet.tscn" id="6_player"]
+[ext_resource type="PackedScene" path="res://scenes/flight/ally_jet.tscn" id="7_ally"]
+[ext_resource type="PackedScene" path="res://scenes/flight/flight_hud.tscn" id="8_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.22, 0.4, 0.68, 1)
+sky_horizon_color = Color(0.7, 0.72, 0.74, 1)
+ground_bottom_color = Color(0.08, 0.14, 0.2, 1)
+ground_horizon_color = Color(0.7, 0.72, 0.74, 1)
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_flight"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_white = 6.0
+glow_enabled = true
+glow_intensity = 0.7
+fog_enabled = true
+fog_light_color = Color(0.68, 0.72, 0.78, 1)
+fog_density = 0.00012
+fog_aerial_perspective = 0.5
+fog_sky_affect = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sea"]
+albedo_color = Color(0.04, 0.13, 0.2, 1)
+metallic = 0.3
+roughness = 0.12
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
+material = SubResource("StandardMaterial3D_sea")
+size = Vector2(60000, 60000)
+
+[node name="FlightTest" type="Node3D"]
+script = ExtResource("1_mission")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_flight")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.55667, 0, 2000, 0)
+light_color = Color(1, 0.95, 0.88, 1)
+light_energy = 1.3
+shadow_enabled = true
+directional_shadow_max_distance = 1500.0
+
+[node name="Terrain" type="MeshInstance3D" parent="."]
+script = ExtResource("2_terrain")
+
+[node name="Sea" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_sea")
+
+[node name="Clouds" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("3_clouds")
+
+[node name="Landmarks" type="Node3D" parent="."]
+script = ExtResource("4_landmarks")
+
+[node name="Bullets" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("5_bullets")
+
+[node name="PlayerJet" parent="." instance=ExtResource("6_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1000, 4800)
+
+[node name="Wingman" parent="." instance=ExtResource("7_ally")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 1010, 4880)
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="FlightHUD" parent="." instance=ExtResource("8_hud")]

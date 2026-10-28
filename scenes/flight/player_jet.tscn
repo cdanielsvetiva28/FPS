@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/flight/player_jet.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/models/jet_halvard.glb" id="2_model"]
+
+[node name="PlayerJet" type="Node3D"]
+script = ExtResource("1_player")
+display_name = "WREN"
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Camera" type="Camera3D" parent="."]
+doppler_tracking = 1
+fov = 70.0
+near = 0.2
+far = 20000.0
+
+[node name="EngineAudio" type="AudioStreamPlayer" parent="."]

@@ -72,11 +72,11 @@ def mix(length: float, *parts: tuple[float, np.ndarray]) -> np.ndarray:
     return out
 
 
-def save(name: str, x: np.ndarray, peak: float = 0.9) -> None:
+def save(name: str, x: np.ndarray, peak: float = 0.9, fade_out: bool = True) -> None:
     x = x / (np.max(np.abs(x)) + 1e-9) * peak
-    # Short fade-out to avoid clicks.
-    fade = min(len(x), int(RATE * 0.01))
-    x[-fade:] *= np.linspace(1.0, 0.0, fade)
+    if fade_out:  # Short fade to avoid a click at the end. Loops skip it.
+        fade = min(len(x), int(RATE * 0.01))
+        x[-fade:] *= np.linspace(1.0, 0.0, fade)
     OUT.mkdir(parents=True, exist_ok=True)
     with wave.open(str(OUT / f"{name}.wav"), "wb") as f:
         f.setnchannels(1)
@@ -193,6 +193,63 @@ def enemy_death() -> None:
     save("enemy_death", mix(0.7, (0.0, fall), (0.3, gear)), peak=0.6)
 
 
+# --- Flight ----------------------------------------------------------------------
+
+def make_loop(x: np.ndarray, crossfade: float = 0.25) -> np.ndarray:
+    """Crossfade the end into the start so the sound loops seamlessly."""
+    n = int(RATE * crossfade)
+    head, body, tail = x[:n], x[n:-n], x[-n:]
+    fade = np.linspace(0.0, 1.0, n)
+    return np.concatenate([tail * (1 - fade) + head * fade, body])
+
+
+def jet_engine() -> None:
+    """Looping turbine roar: low rumble, mid roar and a high whine."""
+    length = 3.0
+    t = t_axis(length)
+    rumble = lowpass(noise(length), 120) * 6.0
+    roar = bandpass(noise(length), 200, 1400) * 1.5
+    whine = (np.sin(2 * np.pi * 2900 * t) * 0.05 + np.sin(2 * np.pi * 4350 * t) * 0.025)
+    wobble = 1.0 + 0.08 * np.sin(2 * np.pi * 0.7 * t)
+    save("jet_engine", make_loop((rumble + roar + whine) * wobble), peak=0.7, fade_out=False)
+
+
+def cannon_shot() -> None:
+    pop = bandpass(noise(0.07), 300, 5000) * decay(0.07, 0.012)
+    thump = sine_sweep(0.07, 160, 70) * decay(0.07, 0.02) * 0.6
+    save("cannon_shot", pop + thump, peak=0.6)
+
+
+def missile_launch() -> None:
+    length = 1.6
+    ignition = lowpass(noise(0.3), 600) * decay(0.3, 0.06) * 2.0
+    hiss = bandpass(noise(length), 800, 7000) * decay(length, 0.6, attack=0.05)
+    save("missile_launch", mix(length, (0.0, ignition), (0.0, hiss)), peak=0.7)
+
+
+def explosion() -> None:
+    length = 2.8
+    blast = lowpass(noise(length), 500) * decay(length, 0.35, attack=0.004) * 3.0
+    crack = bandpass(noise(0.15), 1000, 6000) * decay(0.15, 0.03)
+    boom = sine_sweep(length, 90, 35) * decay(length, 0.4) * 1.5
+    rumble = lowpass(noise(length), 120) * decay(length, 0.9, attack=0.1) * 3.0
+    save("explosion", mix(length, (0.0, blast), (0.0, crack), (0.0, boom), (0.05, rumble)), peak=0.9)
+
+
+def tone(name: str, freq: float, length: float, peak: float, loop: bool = False) -> None:
+    t = t_axis(length)
+    x = np.sin(2 * np.pi * freq * t) + 0.3 * np.sin(2 * np.pi * freq * 2 * t)
+    if not loop:
+        x *= np.minimum(1.0, np.minimum(t / 0.005, (length - t) / 0.01))
+    save(name, x, peak=peak, fade_out=not loop)
+
+
+def flare() -> None:
+    pop = bandpass(noise(0.08), 500, 4000) * decay(0.08, 0.015)
+    fizz = bandpass(noise(0.8), 2000, 9000) * decay(0.8, 0.25, attack=0.02) * 0.4
+    save("flare", mix(0.9, (0.0, pop), (0.02, fizz)), peak=0.5)
+
+
 if __name__ == "__main__":
     rifle_shot()
     pistol_shot()
@@ -210,3 +267,11 @@ if __name__ == "__main__":
     player_hurt()
     bullet_impact()
     enemy_death()
+    jet_engine()
+    cannon_shot()
+    missile_launch()
+    explosion()
+    tone("lock_seek", 950, 0.07, 0.3)
+    tone("lock_solid", 1250, 0.5, 0.25, loop=True)
+    tone("missile_alert", 1750, 0.09, 0.35)
+    flare()

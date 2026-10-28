@@ -1,0 +1,102 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/flight/explosion.gd" id="1_explosion"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fire"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_fire"]
+material = SubResource("StandardMaterial3D_fire")
+radius = 1.0
+height = 2.0
+radial_segments = 12
+rings = 6
+
+[sub_resource type="Gradient" id="Gradient_fire"]
+offsets = PackedFloat32Array(0, 0.3, 1)
+colors = PackedColorArray(1, 0.9, 0.6, 1, 1, 0.45, 0.1, 0.8, 0.3, 0.05, 0, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smoke"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_smoke"]
+material = SubResource("StandardMaterial3D_smoke")
+radius = 1.0
+height = 2.0
+radial_segments = 10
+rings = 5
+
+[sub_resource type="Gradient" id="Gradient_smoke"]
+colors = PackedColorArray(0.2, 0.19, 0.18, 0.8, 0.3, 0.3, 0.3, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_debris"]
+albedo_color = Color(0.08, 0.08, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_debris"]
+material = SubResource("StandardMaterial3D_debris")
+size = Vector3(0.6, 0.3, 0.8)
+
+[node name="Explosion" type="Node3D"]
+script = ExtResource("1_explosion")
+
+[node name="Fire" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 24
+lifetime = 1.2
+one_shot = true
+explosiveness = 0.95
+mesh = SubResource("SphereMesh_fire")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, 2, 0)
+initial_velocity_min = 4.0
+initial_velocity_max = 14.0
+damping_min = 4.0
+damping_max = 8.0
+scale_amount_min = 3.0
+scale_amount_max = 7.0
+color_ramp = SubResource("Gradient_fire")
+
+[node name="Smoke" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 18
+lifetime = 3.5
+one_shot = true
+explosiveness = 0.8
+mesh = SubResource("SphereMesh_smoke")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, 3, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 8.0
+damping_min = 1.0
+damping_max = 2.0
+scale_amount_min = 4.0
+scale_amount_max = 9.0
+color_ramp = SubResource("Gradient_smoke")
+
+[node name="Debris" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 16
+lifetime = 2.5
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("BoxMesh_debris")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 15.0
+initial_velocity_max = 40.0
+angular_velocity_min = -360.0
+angular_velocity_max = 360.0
+scale_amount_min = 0.5
+scale_amount_max = 1.5
+
+[node name="Flash" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.65, 0.3, 1)
+light_energy = 12.0
+omni_range = 120.0
