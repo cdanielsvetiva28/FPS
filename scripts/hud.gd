@@ -5,6 +5,16 @@ extends CanvasLayer
 
 const HIT_SOUND := preload("res://assets/sounds/hitmarker.wav")
 const KILL_SOUND := preload("res://assets/sounds/kill_confirm.wav")
+const KEYBOARD_CONTROLS := """WASD / arrows - move      Shift - sprint      Space - jump
+Ctrl - crouch (hold)      C - crouch (toggle)
+Left click - fire      Right click - aim      R - reload      E (hold) - interact
+1 / 2 / 3 or mouse wheel - switch weapon      Q - last weapon
+Click or Esc - resume      M - main menu      F11 - fullscreen"""
+const CONTROLLER_CONTROLS := """Left stick - move      Right stick - look      L3 - sprint
+Cross / A - jump      Circle / B - crouch
+R2 - fire      L2 - aim      Square / X - reload (hold to interact)
+Triangle / Y - switch weapon      D-pad - pick weapon
+%s - resume      %s - resume      %s - main menu"""
 
 @onready var crosshair: Control = $Crosshair
 @onready var weapon_label: Label = $WeaponLabel
@@ -13,7 +23,6 @@ const KILL_SOUND := preload("res://assets/sounds/kill_confirm.wav")
 @onready var hitmarker: Label = $Hitmarker
 @onready var health_bar: ProgressBar = $HealthBar
 @onready var health_label: Label = $HealthBar/HealthLabel
-@onready var objective_label: Label = $ObjectiveLabel
 @onready var message_label: Label = $MessageLabel
 @onready var banner_label: Label = $BannerLabel
 @onready var damage_overlay: ColorRect = $DamageOverlay
@@ -21,6 +30,8 @@ const KILL_SOUND := preload("res://assets/sounds/kill_confirm.wav")
 @onready var pause_screen: Control = $PauseScreen
 @onready var death_screen: Control = $DeathScreen
 @onready var restart_label: Label = $DeathScreen/Center/RestartLabel
+@onready var hint_label: Label = $HintLabel
+@onready var controls_label: Label = $PauseScreen/Center/Controls
 
 ## Red tint that stays on screen at low health.
 var _low_health_alpha := 0.0
@@ -33,6 +44,8 @@ var _message_tween: Tween
 func _ready() -> void:
 	Game.paused_changed.connect(_on_paused_changed)
 	Game.message_posted.connect(show_message)
+	Game.input_device_changed.connect(_update_prompts)
+	_update_prompts(Game.using_controller)
 	pause_screen.visible = false
 	death_screen.visible = false
 	banner_label.visible = false
@@ -73,10 +86,6 @@ func set_health(current: float, maximum: float) -> void:
 	_low_health_alpha = clampf((0.5 - ratio) / 0.5, 0.0, 1.0) * 0.3
 	if not (_damage_tween and _damage_tween.is_running()):
 		damage_overlay.color.a = _low_health_alpha
-
-
-func set_objective(text: String) -> void:
-	objective_label.text = text
 
 
 func show_hitmarker(killed: bool) -> void:
@@ -131,7 +140,8 @@ func show_death_screen() -> void:
 	restart_label.visible = false
 
 
-func show_restart_hint() -> void:
+func show_restart_hint(text: String) -> void:
+	restart_label.text = text
 	restart_label.visible = true
 
 
@@ -141,3 +151,16 @@ func _on_weapon_changed(weapon: Weapon) -> void:
 
 func _on_paused_changed(paused: bool) -> void:
 	pause_screen.visible = paused
+	if paused:
+		_update_prompts(Game.using_controller)
+
+
+## Swaps keyboard and controller instructions.
+func _update_prompts(_using_controller: bool) -> void:
+	var style := Game.input_style()
+	hint_label.text = "%s - pause / controls" % Game.prompt("pause")
+	if style == "keyboard":
+		controls_label.text = KEYBOARD_CONTROLS
+	else:
+		controls_label.text = CONTROLLER_CONTROLS % [
+			Game.prompt("confirm"), Game.prompt("pause"), Game.prompt("menu")]

@@ -9,6 +9,8 @@
 [ext_resource type="Material" path="res://assets/materials/metal_panel.tres" id="9_metal"]
 [ext_resource type="Material" path="res://assets/materials/crate_2m.tres" id="10_crate"]
 [ext_resource type="Material" path="res://assets/materials/crate_1_5m.tres" id="11_crate_small"]
+[ext_resource type="Script" path="res://scripts/trigger_zone.gd" id="12_trigger"]
+[ext_resource type="Script" path="res://scripts/interactable.gd" id="13_interactable"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/health_pickup.tscn" id="6_health"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/ammo_pickup.tscn" id="7_ammo"]
 
@@ -46,6 +48,55 @@ adjustment_saturation = 0.95
 agent_radius = 0.5
 agent_height = 2.0
 agent_max_climb = 0.25
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_breach"]
+size = Vector3(9, 3, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_extraction"]
+size = Vector3(7, 3, 7)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_terminal"]
+radius = 2.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_console"]
+albedo_color = Color(0.2, 0.22, 0.24, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="BoxMesh_console"]
+material = SubResource("StandardMaterial3D_console")
+size = Vector3(0.9, 1.1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_screen"]
+albedo_color = Color(0.2, 1, 0.45, 1)
+emission_enabled = true
+emission = Color(0.15, 1, 0.4, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_screen"]
+material = SubResource("StandardMaterial3D_screen")
+size = Vector3(0.7, 0.4, 0.04)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_antenna"]
+material = SubResource("StandardMaterial3D_console")
+top_radius = 0.02
+bottom_radius = 0.03
+height = 1.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smoke"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_smoke"]
+material = SubResource("StandardMaterial3D_smoke")
+radius = 0.5
+height = 1.0
+radial_segments = 8
+rings = 4
+
+[sub_resource type="Gradient" id="Gradient_smoke"]
+colors = PackedColorArray(0.3, 1, 0.4, 0.8, 0.5, 0.8, 0.5, 0)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -211,6 +262,68 @@ patrol_route = NodePath("../../PatrolRoutes/EastLoop")
 
 [node name="GateGuard" parent="Enemies" instance=ExtResource("3_enemy")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 22, 0, 0)
+
+[node name="Objectives" type="Node3D" parent="."]
+
+[node name="BreachMarker" type="Marker3D" parent="Objectives"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 6)
+
+[node name="BreachZone" type="Area3D" parent="Objectives"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.5, 3.5)
+script = ExtResource("12_trigger")
+
+[node name="Shape" type="CollisionShape3D" parent="Objectives/BreachZone"]
+shape = SubResource("BoxShape3D_breach")
+
+[node name="Terminal" type="Area3D" parent="Objectives"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 12.2, 2.75, -9)
+script = ExtResource("13_interactable")
+prompt = "download the pylon data"
+hold_time = 3.0
+
+[node name="Shape" type="CollisionShape3D" parent="Objectives/Terminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("SphereShape3D_terminal")
+
+[node name="Console" type="MeshInstance3D" parent="Objectives/Terminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("BoxMesh_console")
+
+[node name="Screen" type="MeshInstance3D" parent="Objectives/Terminal"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 1.05, 0.2)
+mesh = SubResource("BoxMesh_screen")
+
+[node name="Antenna" type="MeshInstance3D" parent="Objectives/Terminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 1.7, -0.1)
+mesh = SubResource("CylinderMesh_antenna")
+
+[node name="ScreenLight" type="OmniLight3D" parent="Objectives/Terminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.5)
+light_color = Color(0.3, 1, 0.5, 1)
+light_energy = 1.5
+omni_range = 3.0
+
+[node name="ExtractionZone" type="Area3D" parent="Objectives"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 22)
+script = ExtResource("12_trigger")
+once = false
+
+[node name="Shape" type="CollisionShape3D" parent="Objectives/ExtractionZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_extraction")
+
+[node name="GreenSmoke" type="CPUParticles3D" parent="Objectives/ExtractionZone"]
+amount = 40
+lifetime = 5.0
+mesh = SubResource("SphereMesh_smoke")
+direction = Vector3(0, 1, 0)
+spread = 15.0
+gravity = Vector3(0.3, 0.6, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 1.5
+scale_amount_min = 1.0
+scale_amount_max = 4.0
+color_ramp = SubResource("Gradient_smoke")
 
 [node name="Pickups" type="Node3D" parent="."]
 

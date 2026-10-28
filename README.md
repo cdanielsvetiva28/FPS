@@ -4,10 +4,57 @@ A single-player, story-driven shooter that crosses Call of Duty-style ground com
 with Ace Combat-style air combat. Built with **Godot 4.7** and **GDScript**.
 Windows only, no online play. The story is in [docs/STORY.md](docs/STORY.md).
 
-The game starts on a main menu with two test missions:
+The game starts on a main menu with two test missions (completed missions are marked):
 
-- **AIR: Flight Test "First Light"**: a preview of Mission 2
-- **GROUND: Combat Test "The Compound"**
+- **AIR: "First Light"**: a preview of Mission 2
+- **GROUND: "Compound Raid"**: breach, clear, download the pylon data, extract
+
+## Controllers (PS4 / PS5 / Xbox)
+
+Plug in a DualShock 4, DualSense or Xbox controller at any time, over USB or Bluetooth.
+The game announces it ("DualSense (PS5) controller connected") and switches every
+on-screen prompt to controller buttons. Touch the mouse or keyboard and the prompts switch
+back; both work at the same time. Unplugging the controller mid-mission pauses the game.
+Controllers rumble for gunfire, hits, landings, missile launches and crashes.
+
+| On foot (Call of Duty layout) | | In the air (Ace Combat layout) | |
+|---|---|---|---|
+| Left stick | Move | Left stick | Pitch and roll (push up to dive) |
+| Right stick | Look (slows over enemies) | Right stick | Look around the jet |
+| L3 | Sprint (click once) | R2 / L2 | Accelerate / brake |
+| R2 / L2 | Fire / aim down sights | L1 / R1 | Rudder (yaw) |
+| Cross | Jump | Square | Cannon |
+| Circle | Crouch (toggle) | Circle | Missile |
+| Square | Reload (hold: interact) | Triangle | Switch target |
+| Triangle | Switch weapon | Cross | Flares |
+| D-pad | Pick weapon | R3 | Cockpit / chase camera |
+| Options | Pause (Create/Share: main menu) | Options | Pause |
+
+Menus work with the D-pad or left stick plus Cross. Stick sensitivity, the response
+curve, aim slowdown and inverted pitch are adjustable on the `Player` and `PlayerJet` nodes.
+
+If Steam is running with **PlayStation Configuration Support** on, Steam may present your
+controller as an Xbox pad. It still works; prompts just show Xbox names.
+
+## Mission framework
+
+Missions are built from four reusable pieces, most of which you can set up in the editor
+without code:
+
+- **`Radio`** (autoload): subtitled radio chatter. `Radio.say("SKYWARD", "Bandits inbound.")`
+  queues a line; enemy callsigns show in orange.
+- **`Mission`** (autoload): the objective list (top right), waypoint markers with distance
+  (pinned to the screen edge when off-screen), checkpoints, and campaign progress saved to
+  `user://stormline_save.json`.
+- **`TriggerZone`** (`scripts/trigger_zone.gd` on an `Area3D`): fires when the player enters.
+  Set **Radio Lines** (`"CALLSIGN: text"`), **Objective To Complete** and **Checkpoint**
+  in the Inspector.
+- **`Interactable`** (`scripts/interactable.gd` on an `Area3D`): "Hold E / Square to ..."
+  with a progress bar. Connect its `used` signal.
+
+When you die you can retry from the last checkpoint, restart the mission, or go to the
+menu. A mission script saves whatever it needs at a checkpoint and restores itself when
+the level reloads; `scripts/main.gd` (Compound Raid) is the worked example.
 
 ## Air combat
 
@@ -95,6 +142,7 @@ five hostiles to win the area.
 | Aim down sights | Right mouse |
 | Reload | R |
 | Switch weapon | 1 / 2 / 3, mouse wheel, Q for last weapon |
+| Interact | E (hold) |
 | Pause | Esc (click or Esc to resume; M for main menu) |
 | Fullscreen | F11 |
 
@@ -233,6 +281,6 @@ Everything is set up so you can replace the placeholders with downloaded art:
 2. ~~Core loop: enemy AI, player health and damage, pickups, pause, death/restart~~
 3. ~~Story: see [docs/STORY.md](docs/STORY.md)~~
 4. ~~Flight combat prototype~~
-5. Mission framework: objectives, checkpoints, saving, radio dialogue for ground missions
+5. ~~Mission framework: objectives, waypoints, checkpoints, saving, radio; controller support~~
 6. Vertical slice: Mission 3 "Voice on the Radio", the first combined air + ground mission
 7. Expand: the rest of the campaign, menus, settings, Windows export

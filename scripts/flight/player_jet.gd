@@ -5,6 +5,8 @@ extends Aircraft
 ##
 ## The mouse moves a virtual stick that slowly re-centres, so small mouse
 ## movements make small corrections and big sweeps make hard turns.
+## On a controller (Ace Combat layout) the left stick flies the plane, R2/L2
+## are accelerate/brake, L1/R1 are rudder and the right stick looks around.
 
 signal target_changed(target: Aircraft)
 signal hit_confirmed(killed: bool)
@@ -24,6 +26,11 @@ const PYLON_OFFSETS: Array[Vector3] = [Vector3(3.4, -0.6, 1.6), Vector3(-3.4, -0
 @export var invert_pitch := false
 ## Throttle change per second while holding W/S.
 @export var throttle_rate := 0.6
+## Controller: false = push the stick up to dive, like a real plane (Ace
+## Combat's default). true = push up to climb.
+@export var invert_controller_pitch := false
+## Controller: higher = finer control near the centre of the stick.
+@export var stick_response_curve := 1.5
 
 @export_group("Weapons")
 @export var gun_damage := 6.0
@@ -67,6 +74,7 @@ var _lock_beep_timer := 0.0
 var _lock_tone: AudioStreamPlayer
 var _canopy: Node3D
 var _camera_rotation := Quaternion.IDENTITY
+var _free_look := Vector2.ZERO
 var _bullets: BulletManager
 var _terrain: Terrain
 
@@ -93,6 +101,7 @@ func _ready() -> void:
 	_lock_tone.volume_db = -14.0
 	add_child(_lock_tone)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	damaged.connect(func(_amount: float) -> void: Game.rumble(0.5, 0.8, 0.3))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -117,10 +126,15 @@ func _process(delta: float) -> void:
 		_update_camera(delta)
 		return
 
-	throttle = clampf(throttle + Input.get_axis("throttle_down", "throttle_up") * throttle_rate * delta, 0.0, 1.0)
+	_update_throttle(delta)
 	stick = stick.move_toward(Vector2.ZERO, stick_recenter * delta)
-	var pitch := stick.y if invert_pitch else -stick.y
-	var roll := clampf(stick.x + Input.get_axis("roll_left", "roll_right"), -1.0, 1.0)
+	var pad := Input.get_vector("stick_left", "stick_right", "stick_up", "stick_down", 0.1)
+	if pad != Vector2.ZERO:
+		pad = pad.normalized() * pow(pad.length(), stick_response_curve)
+	var mouse_pitch := stick.y if invert_pitch else -stick.y
+	var pad_pitch := -pad.y if invert_controller_pitch else pad.y
+	var pitch := clampf(mouse_pitch + pad_pitch, -1.0, 1.0)
+	var roll := clampf(stick.x + pad.x + Input.get_axis("roll_left", "roll_right"), -1.0, 1.0)
 	fly(pitch, roll, Input.get_axis("yaw_left", "yaw_right"), delta)
 
 	_check_ground_collision()
@@ -130,6 +144,16 @@ func _process(delta: float) -> void:
 	_update_weapons(delta)
 	_update_camera(delta)
 	_update_audio()
+
+
+func _update_throttle(delta: float) -> void:
+	if Game.using_controller:
+		# Triggers: hold R2 to accelerate, L2 to brake; let go to settle at cruise.
+		var target := 0.55 + 0.45 * Input.get_action_strength("accelerate") - 0.45 * Input.get_action_strength("brake")
+		throttle = move_toward(throttle, target, 1.2 * delta)
+	else:
+		var change := Input.get_axis("throttle_down", "throttle_up") * throttle_rate * delta
+		throttle = clampf(throttle + change, 0.0, 1.0)
 
 
 func is_locked() -> bool:
@@ -160,6 +184,7 @@ func notify_hit(killed: bool) -> void:
 func _on_destroyed() -> void:
 	# Keep the node (and its camera) around; just hide the jet.
 	model.visible = false
+	Game.rumble(1.0, 1.0, 0.8)
 	engine_audio.stop()
 	_lock_tone.stop()
 
@@ -241,7 +266,7 @@ func _update_weapons(delta: float) -> void:
 
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		return
-	if Input.is_action_pressed("fire") and _gun_cooldown <= 0.0 and gun_ammo_left > 0:
+	if Input.is_action_pressed("gun") and _gun_cooldown <= 0.0 and gun_ammo_left > 0:
 		_fire_gun()
 	if Input.is_action_just_pressed("fire_missile"):
 		_fire_missile()
@@ -256,6 +281,7 @@ func _fire_gun() -> void:
 	var muzzle := global_position + forward() * 9.0 - global_basis.y * 0.3
 	_bullets.fire(self, muzzle, direction * 1100.0 + velocity, gun_damage, 1.4)
 	Game.play_sound(CANNON_SOUND, -12.0, 0.08)
+	Game.rumble(0.25, 0.05, 0.06)
 
 
 func _fire_missile() -> void:
@@ -272,6 +298,7 @@ func _fire_missile() -> void:
 	var missile: Missile = MISSILE_SCENE.instantiate()
 	missile.setup(self, target if is_locked() else null, PYLON_OFFSETS[pylon])
 	get_tree().current_scene.add_child(missile)
+	Game.rumble(0.4, 0.3, 0.15)
 
 
 func _deploy_flares() -> void:
@@ -306,7 +333,11 @@ func _update_camera(delta: float) -> void:
 			_canopy.visible = true
 		# The chase camera lags slightly behind the jet's rotation.
 		_camera_rotation = _camera_rotation.slerp(global_basis.get_rotation_quaternion(), minf(5.0 * delta, 1.0))
-		var camera_basis := Basis(_camera_rotation)
+		# Right stick swings the camera around the jet; it springs back on release.
+		var look := Input.get_vector("look_left", "look_right", "look_up", "look_down", 0.15)
+		_free_look = _free_look.lerp(look, minf(8.0 * delta, 1.0))
+		var camera_basis := Basis(_camera_rotation) * Basis(Vector3.UP, -_free_look.x * PI * 0.9) \
+			* Basis(Vector3.RIGHT, -_free_look.y * 0.7)
 		var eye := global_position + camera_basis * chase_offset
 		camera.global_transform = Transform3D(camera_basis, eye).looking_at(
 			global_position + camera_basis * Vector3(0, 2, -60), camera_basis.y)

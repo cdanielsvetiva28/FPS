@@ -13,15 +13,6 @@ border_color = Color(0.55, 1, 0.6, 0.6)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
 bg_color = Color(0.55, 1, 0.6, 0.8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_radio"]
-bg_color = Color(0, 0.05, 0.02, 0.6)
-border_width_left = 3
-border_color = Color(0.55, 1, 0.6, 0.8)
-content_margin_left = 14.0
-content_margin_top = 8.0
-content_margin_right = 14.0
-content_margin_bottom = 8.0
-
 [node name="FlightHUD" type="CanvasLayer"]
 process_mode = 3
 script = ExtResource("1_hud")
@@ -152,24 +143,6 @@ text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ObjectiveLabel" type="Label" parent="."]
-anchor_left = 1
-anchor_top = 0
-anchor_right = 1
-anchor_bottom = 0
-offset_left = -520
-offset_top = 20
-offset_right = -30
-offset_bottom = 52
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.55, 1, 0.6, 0.95)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-text = ""
-horizontal_alignment = 2
-vertical_alignment = 1
-
 [node name="WarningLabel" type="Label" parent="."]
 anchor_left = 0.5
 anchor_top = 0
@@ -187,34 +160,6 @@ theme_override_font_sizes/font_size = 30
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 0
-
-[node name="RadioPanel" type="PanelContainer" parent="."]
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = -210.0
-offset_right = 620.0
-offset_bottom = -110.0
-grow_vertical = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_radio")
-
-[node name="Lines" type="VBoxContainer" parent="RadioPanel"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Callsign" type="Label" parent="RadioPanel/Lines"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 1, 0.6, 1)
-theme_override_font_sizes/font_size = 16
-text = "SKYWARD"
-
-[node name="Text" type="Label" parent="RadioPanel/Lines"]
-custom_minimum_size = Vector2(540, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = ""
-autowrap_mode = 3
 
 [node name="BannerLabel" type="Label" parent="."]
 visible = false

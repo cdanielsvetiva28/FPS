@@ -84,7 +84,7 @@ func _process(delta: float) -> void:
 	camera.fov = lerpf(_base_fov, current.aim_fov, smoothstep(0.0, 1.0, aim_amount))
 
 	if can_act and not player.is_sprinting:
-		if Input.is_action_just_pressed("reload"):
+		if Input.is_action_just_pressed("reload") and not is_instance_valid(Game.interaction_focus):
 			current.reload()
 		if Input.is_action_pressed("fire") and not _block_fire:
 			current.try_fire(Input.is_action_just_pressed("fire"))

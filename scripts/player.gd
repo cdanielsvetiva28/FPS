@@ -39,6 +39,15 @@ const HURT_SOUND := preload("res://assets/sounds/player_hurt.wav")
 @export var mouse_sensitivity := 0.0025
 @export var max_pitch_degrees := 89.0
 
+@export_group("Controller")
+## Turn speed at full right-stick tilt, in radians per second (yaw, pitch).
+@export var stick_look_speed := Vector2(3.2, 2.4)
+## Higher = finer control near the centre of the stick.
+@export var stick_response_curve := 1.8
+@export var invert_stick_look := false
+## How much looking slows down while the crosshair is over an enemy.
+@export_range(0.0, 1.0) var aim_slowdown := 0.45
+
 @export_group("Head Bob")
 @export var bob_frequency := 2.2
 @export var bob_amplitude := 0.05
@@ -59,6 +68,8 @@ var is_sprinting := false
 var crouch_amount := 0.0
 
 var _crouch_toggled := false
+## Controller sprint: click L3 once and keep running until you stop.
+var _sprint_latched := false
 var _capsule: CapsuleShape3D
 var _stand_check_shape: CapsuleShape3D
 var _bob_time := 0.0
@@ -90,6 +101,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		_clamp_pitch()
 	elif event.is_action_pressed("crouch_toggle"):
 		_crouch_toggled = not _crouch_toggled
+	elif event.is_action_pressed("sprint_toggle"):
+		_sprint_latched = true
+		_crouch_toggled = false
+
+
+func _process(delta: float) -> void:
+	if is_dead or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		return
+	# Right-stick look. The curve gives fine control near the centre.
+	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down", 0.12)
+	if look == Vector2.ZERO:
+		return
+	var curved := look.normalized() * pow(look.length(), stick_response_curve)
+	var speed := stick_look_speed * lerpf(1.0, 0.55, weapons.aim_amount)
+	if _crosshair_over_enemy():
+		speed *= 1.0 - aim_slowdown
+	rotate_y(-curved.x * speed.x * delta)
+	head.rotate_x((curved.y if invert_stick_look else -curved.y) * speed.y * delta)
+	_clamp_pitch()
 
 
 func _physics_process(delta: float) -> void:
@@ -111,11 +141,15 @@ func _physics_process(delta: float) -> void:
 			velocity.y = jump_velocity
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var direction := (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
+	# Not normalized, so a half-tilted stick walks at half speed.
+	var direction := transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)
 
 	# Sprint only forward, and not while crouching, aiming or shooting.
-	is_sprinting = Input.is_action_pressed("sprint") and input_dir.y < 0.0 and not is_crouching \
+	var can_sprint := input_dir.y < -0.3 and not is_crouching \
 		and not Input.is_action_pressed("aim") and not Input.is_action_pressed("fire")
+	if not can_sprint:
+		_sprint_latched = false
+	is_sprinting = can_sprint and (Input.is_action_pressed("sprint") or _sprint_latched)
 	var target_speed := walk_speed
 	if is_sprinting:
 		target_speed = sprint_speed
@@ -133,6 +167,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if is_on_floor() and not was_on_floor and _fall_speed > 4.0:
 		Game.play_sound(LAND_SOUND, linear_to_db(clampf(_fall_speed / 10.0, 0.3, 1.0)))
+		Game.rumble(0.2, 0.3, 0.1)
 
 	_update_footsteps(delta)
 	_update_head_bob(delta)
@@ -145,10 +180,17 @@ func take_damage(amount: float, from_position := Vector3.ZERO, _hit_position := 
 	health_changed.emit(health, max_health)
 	damaged.emit(from_position)
 	Game.play_sound(HURT_SOUND, -4.0, 0.1)
+	Game.rumble(0.3, 0.6, 0.2)
 	if health <= 0.0:
 		_die()
 		return true
 	return false
+
+
+## Sets health directly (e.g. when restoring a checkpoint).
+func set_health(value: float) -> void:
+	health = clampf(value, 1.0, max_health)
+	health_changed.emit(health, max_health)
 
 
 ## Returns false (and does nothing) if already at full health.
@@ -170,6 +212,20 @@ func add_recoil(pitch_degrees: float, yaw_degrees: float) -> void:
 ## The point enemies look and shoot at: upper chest, lower when crouching.
 func get_aim_point() -> Vector3:
 	return global_position + Vector3.UP * (head.position.y - 0.25)
+
+
+## Controller aim assist: true when an enemy is right under the crosshair.
+func _crosshair_over_enemy() -> bool:
+	if not Game.using_controller:
+		return false
+	var forward := -camera.global_basis.z
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var to_enemy := (node as Node3D).global_position + Vector3.UP * 1.2 - camera.global_position
+		var distance := to_enemy.length()
+		# About half a body-width either side of the crosshair.
+		if distance > 0.5 and distance < 80.0 and forward.angle_to(to_enemy) < atan(0.6 / distance):
+			return true
+	return false
 
 
 func _clamp_pitch() -> void:
@@ -227,6 +283,7 @@ func _update_footsteps(delta: float) -> void:
 
 func _die() -> void:
 	is_dead = true
+	Game.rumble(0.6, 1.0, 0.6)
 	weapons.visible = false
 	weapons.set_process(false)
 	died.emit()

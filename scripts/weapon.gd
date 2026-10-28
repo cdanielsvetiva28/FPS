@@ -247,6 +247,9 @@ func _play_fire_effects() -> void:
 	_kick_pitch += deg_to_rad(model_pitch_degrees) * lerpf(1.0, 0.3, aim)
 
 	Game.play_sound(fire_sound, -2.0)
+	# Heavier guns kick the controller harder.
+	var kick := clampf(camera_recoil_pitch / 4.0, 0.1, 1.0)
+	Game.rumble(0.3 * kick + 0.1, 0.8 * kick, 0.07 + 0.08 * kick)
 
 	muzzle_flash.scale = Vector3.ONE * randf_range(0.8, 1.25)
 	muzzle_flash.visible = true

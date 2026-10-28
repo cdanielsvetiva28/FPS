@@ -250,6 +250,23 @@ def flare() -> None:
     save("flare", mix(0.9, (0.0, pop), (0.02, fizz)), peak=0.5)
 
 
+# --- UI / mission ------------------------------------------------------------
+
+def radio_click() -> None:
+    """Push-to-talk squelch at the start of a radio line."""
+    squelch = bandpass(noise(0.09), 1200, 5000) * decay(0.09, 0.03, 0.002)
+    t = t_axis(0.04)
+    beep = np.sin(2 * np.pi * 1450 * t) * decay(0.04, 0.02) * 0.6
+    save("radio_click", mix(0.12, (0.0, beep), (0.02, squelch)), peak=0.4)
+
+
+def objective_complete() -> None:
+    t = t_axis(0.3)
+    notes = [(0.0, 660), (0.09, 880), (0.18, 1320)]
+    parts = [(start, np.sin(2 * np.pi * f * t) * decay(0.3, 0.08)) for start, f in notes]
+    save("objective_complete", mix(0.5, *parts), peak=0.45)
+
+
 if __name__ == "__main__":
     rifle_shot()
     pistol_shot()
@@ -275,3 +292,5 @@ if __name__ == "__main__":
     tone("lock_solid", 1250, 0.5, 0.25, loop=True)
     tone("missile_alert", 1750, 0.09, 0.35)
     flare()
+    radio_click()
+    objective_complete()

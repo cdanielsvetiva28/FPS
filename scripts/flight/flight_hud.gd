@@ -1,7 +1,8 @@
 class_name FlightHUD
 extends CanvasLayer
 ## Flight HUD: speed, altitude, throttle, weapons, health, target markers with
-## lock-on ring, off-screen target arrow, radar, warnings and radio subtitles.
+## lock-on ring, off-screen target arrow, radar and warnings. Radio chatter and
+## objectives come from the shared Radio and Mission autoloads.
 
 const ALERT_SOUND := preload("res://assets/sounds/missile_alert.wav")
 const HIT_SOUND := preload("res://assets/sounds/hitmarker.wav")
@@ -13,6 +14,21 @@ const LOCK_COLOR := Color(1.0, 0.2, 0.15, 1.0)
 const WARN_COLOR := Color(1.0, 0.25, 0.2, 1.0)
 const RADAR_RANGE := 6000.0
 const RADAR_RADIUS := 90.0
+const KEYBOARD_CONTROLS := """PAUSED
+Click or Esc to resume      M - main menu
+
+Mouse - pitch and roll      Q / E - roll      A / D - rudder (yaw)
+W / S - throttle (full throttle = afterburner)
+Left click - cannon      Right click - missile (lock on first)
+Space / Tab - switch target      F - flares
+V - cockpit / chase camera      F11 - fullscreen"""
+const CONTROLLER_CONTROLS := """PAUSED
+%s to resume      %s - main menu
+
+Left stick - pitch and roll (push up to dive)      L1 / R1 - rudder (yaw)
+R2 - accelerate      L2 - brake      Right stick - look around
+Square / X - cannon      Circle / B - missile (lock on first)
+Triangle / Y - switch target      Cross / A - flares      R3 - camera"""
 
 @onready var overlay: Control = $Overlay
 @onready var speed_label: Label = $SpeedLabel
@@ -22,25 +38,19 @@ const RADAR_RADIUS := 90.0
 @onready var health_bar: ProgressBar = $HealthBar
 @onready var target_label: Label = $TargetLabel
 @onready var warning_label: Label = $WarningLabel
-@onready var objective_label: Label = $ObjectiveLabel
-@onready var radio_panel: PanelContainer = $RadioPanel
-@onready var radio_callsign: Label = $RadioPanel/Lines/Callsign
-@onready var radio_text: Label = $RadioPanel/Lines/Text
 @onready var banner_label: Label = $BannerLabel
 @onready var prompt_label: Label = $PromptLabel
 @onready var pause_screen: Control = $PauseScreen
+@onready var pause_text: Label = $PauseScreen/Text
 
 var player: PlayerJet
-var _radio_queue: Array = []
-var _radio_timer := 0.0
 var _alert_timer := 0.0
 var _blink := 0.0
 
 
 func _ready() -> void:
-	Game.paused_changed.connect(func(paused: bool) -> void: pause_screen.visible = paused)
+	Game.paused_changed.connect(_on_paused_changed)
 	pause_screen.visible = false
-	radio_panel.visible = false
 	banner_label.visible = false
 	prompt_label.visible = false
 	overlay.draw.connect(_draw_overlay)
@@ -49,17 +59,6 @@ func _ready() -> void:
 func bind_player(jet: PlayerJet) -> void:
 	player = jet
 	player.hit_confirmed.connect(_on_hit_confirmed)
-
-
-## Queues a radio line; lines play one after another.
-func radio(callsign: String, text: String, duration := 0.0) -> void:
-	if duration <= 0.0:
-		duration = clampf(1.5 + text.length() * 0.055, 2.5, 7.0)
-	_radio_queue.append([callsign, text, duration])
-
-
-func set_objective(text: String) -> void:
-	objective_label.text = text
 
 
 func show_banner(text: String, color := HUD_GREEN) -> void:
@@ -75,7 +74,6 @@ func show_prompt(text: String) -> void:
 
 func _process(delta: float) -> void:
 	_blink = fmod(_blink + delta, 1.0)
-	_update_radio(delta)
 	overlay.queue_redraw()
 	if player == null:
 		return
@@ -93,20 +91,6 @@ func _process(delta: float) -> void:
 		target_label.text = ""
 
 	_update_warnings(delta)
-
-
-func _update_radio(delta: float) -> void:
-	_radio_timer -= delta
-	if _radio_timer > 0.0:
-		return
-	if _radio_queue.is_empty():
-		radio_panel.visible = false
-		return
-	var line: Array = _radio_queue.pop_front()
-	radio_callsign.text = line[0]
-	radio_text.text = line[1]
-	_radio_timer = line[2]
-	radio_panel.visible = true
 
 
 func _update_warnings(delta: float) -> void:
@@ -138,6 +122,16 @@ func _update_warnings(delta: float) -> void:
 		warnings.append("RETURN TO COMBAT AREA")
 
 	warning_label.text = "\n".join(warnings) if _blink < 0.6 else ""
+
+
+func _on_paused_changed(paused: bool) -> void:
+	pause_screen.visible = paused
+	if not paused:
+		return
+	if Game.input_style() == "keyboard":
+		pause_text.text = KEYBOARD_CONTROLS
+	else:
+		pause_text.text = CONTROLLER_CONTROLS % [Game.prompt("confirm"), Game.prompt("menu")]
 
 
 func _on_hit_confirmed(killed: bool) -> void:

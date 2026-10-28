@@ -92,7 +92,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-text = "AIR — Flight Test: \"First Light\""
+text = "AIR — \"First Light\""
 alignment = 0
 
 [node name="GroundButton" type="Button" parent="Center/Buttons"]
@@ -102,7 +102,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-text = "GROUND — Combat Test: The Compound"
+text = "GROUND — \"Compound Raid\""
 alignment = 0
 
 [node name="QuitButton" type="Button" parent="Center/Buttons"]
@@ -132,3 +132,17 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.4)
 theme_override_font_sizes/font_size = 14
 text = "Prototype build — Halvard Commonwealth Air Arm"
 horizontal_alignment = 2
+
+[node name="DeviceLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -50.0
+offset_right = 700.0
+offset_bottom = -20.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.78, 0.6, 0.25, 0.9)
+theme_override_font_sizes/font_size = 16
+text = "Keyboard & mouse"
