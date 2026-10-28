@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/target.gd" id="1_target"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_target"]
+radius = 0.35
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_target"]
+albedo_color = Color(0.9, 0.42, 0.18, 1)
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_target"]
+material = SubResource("StandardMaterial3D_target")
+radius = 0.35
+height = 1.8
+
+[node name="Target" type="AnimatableBody3D"]
+script = ExtResource("1_target")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_target")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_target")

@@ -1,0 +1,8 @@
+# Godot 4 generated files
+.godot/
+*.tmp
+
+# Export output
+builds/
+*.exe
+*.pck
