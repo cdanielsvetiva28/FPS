@@ -41,7 +41,7 @@ func _physics_process(delta: float) -> void:
 	position = _start_position + move_offset * sin(_move_time)
 
 
-func take_damage(amount: float) -> bool:
+func take_damage(amount: float, _from_position := Vector3.ZERO, _hit_position := Vector3.ZERO) -> bool:
 	if health <= 0.0:
 		return false
 
@@ -60,7 +60,7 @@ func _die() -> void:
 	mesh.visible = false
 	collision.set_deferred("disabled", true)
 
-	await get_tree().create_timer(respawn_time).timeout
+	await get_tree().create_timer(respawn_time, false).timeout
 
 	health = max_health
 	_material.albedo_color = _base_color

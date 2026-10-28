@@ -1,6 +1,12 @@
 class_name Player
 extends CharacterBody3D
-## First-person player controller: mouse look, walk/sprint, jump and head bob.
+## First-person player controller: mouse look, walk/sprint, jump, head bob,
+## health and death.
+
+signal health_changed(current: float, maximum: float)
+## Emitted on every hit, with the world position the damage came from.
+signal damaged(from_position: Vector3)
+signal died
 
 @export_group("Movement")
 @export var walk_speed := 5.0
@@ -19,26 +25,29 @@ extends CharacterBody3D
 @export var bob_frequency := 2.2
 @export var bob_amplitude := 0.05
 
+@export_group("Health")
+@export var max_health := 100.0
+
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var weapon: Weapon = $Head/Camera3D/Weapon
+
+var health := 0.0
+var is_dead := false
 
 var _bob_time := 0.0
 
 
 func _ready() -> void:
+	add_to_group("player")
+	health = max_health
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	elif event is InputEventMouseButton and event.is_pressed() and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-		# Click back into the game; don't let that same click fire the weapon.
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		weapon.block_until_release = true
-		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	if is_dead:
+		return
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
 		rotate_y(-motion.relative.x * mouse_sensitivity)
 		head.rotate_x(-motion.relative.y * mouse_sensitivity)
@@ -49,7 +58,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity += get_gravity() * delta
-	elif Input.is_action_just_pressed("jump"):
+
+	if is_dead:
+		velocity.x = move_toward(velocity.x, 0.0, 20.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, 20.0 * delta)
+		move_and_slide()
+		return
+
+	if is_on_floor() and Input.is_action_just_pressed("jump"):
 		velocity.y = jump_velocity
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -66,6 +82,39 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_head_bob(delta)
+
+
+func take_damage(amount: float, from_position := Vector3.ZERO, _hit_position := Vector3.ZERO) -> bool:
+	if is_dead:
+		return false
+	health = maxf(health - amount, 0.0)
+	health_changed.emit(health, max_health)
+	damaged.emit(from_position)
+	if health <= 0.0:
+		_die()
+		return true
+	return false
+
+
+## Returns false (and does nothing) if already at full health.
+func heal(amount: float) -> bool:
+	if is_dead or health >= max_health:
+		return false
+	health = minf(health + amount, max_health)
+	health_changed.emit(health, max_health)
+	return true
+
+
+func _die() -> void:
+	is_dead = true
+	weapon.visible = false
+	weapon.set_process(false)
+	died.emit()
+
+	# Drop to the ground and tip over.
+	var tween := create_tween().set_parallel()
+	tween.tween_property(head, "position:y", 0.35, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(head, "rotation:z", deg_to_rad(70.0), 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
 func _update_head_bob(delta: float) -> void:

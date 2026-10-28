@@ -3,8 +3,9 @@ extends Node3D
 ## Hitscan weapon: fires a ray from the centre of the screen and handles ammo,
 ## reloading, recoil and simple hit effects.
 ##
-## Anything the ray hits that has a `take_damage(amount: float) -> bool` method
-## takes damage. The method should return true when the hit killed it.
+## Anything the ray hits that has a
+## `take_damage(amount: float, from_position: Vector3, hit_position: Vector3) -> bool`
+## method takes damage. The method should return true when the hit killed it.
 
 signal ammo_changed(in_magazine: int, reserve: int)
 signal reload_state_changed(reloading: bool)
@@ -14,8 +15,11 @@ signal hit_confirmed(killed: bool)
 @export var rounds_per_second := 9.0
 @export var magazine_size := 30
 @export var reserve_ammo := 120
+@export var max_reserve_ammo := 240
 @export var reload_time := 1.5
 @export var max_range := 200.0
+## Enemies within this distance hear the shot.
+@export var noise_radius := 35.0
 
 @export_group("Feel")
 ## How far the gun model kicks back per shot, in metres.
@@ -60,6 +64,7 @@ func _ready() -> void:
 	_impact_mesh.material = impact_material
 
 	ammo_changed.emit(ammo_in_magazine, reserve_ammo)
+	Game.paused_changed.connect(_on_paused_changed)
 
 
 func _process(delta: float) -> void:
@@ -85,7 +90,8 @@ func reload() -> void:
 	is_reloading = true
 	reload_state_changed.emit(true)
 
-	await get_tree().create_timer(reload_time).timeout
+	# `false`: don't let the timer run while the game is paused.
+	await get_tree().create_timer(reload_time, false).timeout
 
 	var taken := mini(magazine_size - ammo_in_magazine, reserve_ammo)
 	ammo_in_magazine += taken
@@ -93,6 +99,15 @@ func reload() -> void:
 	is_reloading = false
 	reload_state_changed.emit(false)
 	ammo_changed.emit(ammo_in_magazine, reserve_ammo)
+
+
+## Returns false (and does nothing) if the reserve is already full.
+func add_ammo(amount: int) -> bool:
+	if reserve_ammo >= max_reserve_ammo:
+		return false
+	reserve_ammo = mini(reserve_ammo + amount, max_reserve_ammo)
+	ammo_changed.emit(ammo_in_magazine, reserve_ammo)
+	return true
 
 
 func _try_fire() -> void:
@@ -106,15 +121,17 @@ func _try_fire() -> void:
 	ammo_in_magazine -= 1
 	ammo_changed.emit(ammo_in_magazine, reserve_ammo)
 	_play_fire_effects()
+	Game.make_noise(global_position, noise_radius)
 
 	ray.force_raycast_update()
 	if not ray.is_colliding():
 		return
 
-	_spawn_impact(ray.get_collision_point(), ray.get_collision_normal())
+	var hit_point := ray.get_collision_point()
+	_spawn_impact(hit_point, ray.get_collision_normal())
 	var collider := ray.get_collider()
 	if collider != null and collider.has_method("take_damage"):
-		var killed: bool = collider.call("take_damage", damage)
+		var killed: bool = collider.call("take_damage", damage, global_position, hit_point)
 		hit_confirmed.emit(killed)
 
 
@@ -133,6 +150,12 @@ func _spawn_impact(point: Vector3, normal: Vector3) -> void:
 	get_tree().current_scene.add_child(impact)
 	impact.global_position = point + normal * 0.005
 	get_tree().create_timer(impact_lifetime).timeout.connect(impact.queue_free)
+
+
+func _on_paused_changed(paused: bool) -> void:
+	# The click that resumes the game shouldn't also fire.
+	if not paused:
+		block_until_release = true
 
 
 func _update_model_pose(delta: float) -> void:
