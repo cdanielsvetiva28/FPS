@@ -19,7 +19,7 @@ enum State { IDLE, INVESTIGATE, COMBAT, DEAD }
 const AMMO_PICKUP := preload("res://scenes/pickups/ammo_pickup.tscn")
 const HEALTH_PICKUP := preload("res://scenes/pickups/health_pickup.tscn")
 ## Hits above this height (relative to the feet) count as headshots.
-const HEAD_HEIGHT := 1.4
+const HEAD_HEIGHT := 1.45
 
 @export var max_health := 100.0
 @export var headshot_multiplier := 2.5
@@ -55,17 +55,21 @@ const HEAD_HEIGHT := 1.4
 @export var preferred_distance_max := 16.0
 @export var max_shot_range := 60.0
 
+@export_group("Sounds")
+@export var shot_sound: AudioStream
+@export var death_sound: AudioStream
+
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var body_visual: Node3D = $Body
-@onready var torso: MeshInstance3D = $Body/Torso
-@onready var head_mesh: MeshInstance3D = $Body/Head
 @onready var muzzle: Marker3D = $Body/Gun/Muzzle
 @onready var muzzle_flash: OmniLight3D = $Body/Gun/Muzzle/MuzzleFlash
+@onready var muzzle_flash_sprite: MeshInstance3D = $Body/Gun/Muzzle/MuzzleFlash/Flash
 @onready var eyes: Marker3D = $Eyes
 @onready var alert_label: Label3D = $AlertLabel
 @onready var collision: CollisionShape3D = $CollisionShape3D
 
 static var _tracer_mesh: BoxMesh
+static var _hit_flash_material: StandardMaterial3D
 
 var state := State.IDLE
 var health := 0.0
@@ -92,8 +96,8 @@ var _strafe_direction := 0.0
 var _strafe_timer := 0.0
 
 var _last_nav_target := Vector3.INF
-var _material: StandardMaterial3D
-var _base_color: Color
+var _body_meshes: Array[MeshInstance3D] = []
+var _hit_flash_id := 0
 
 
 func _ready() -> void:
@@ -109,11 +113,14 @@ func _ready() -> void:
 				if point is Node3D:
 					_patrol_points.append((point as Node3D).global_position)
 
-	# Own copy of the material so hit flashes only affect this enemy.
-	_material = torso.get_active_material(0).duplicate() as StandardMaterial3D
-	torso.material_override = _material
-	head_mesh.material_override = _material
-	_base_color = _material.albedo_color
+	for node in body_visual.find_children("*", "MeshInstance3D"):
+		if node != muzzle_flash_sprite:
+			_body_meshes.append(node as MeshInstance3D)
+	if _hit_flash_material == null:
+		_hit_flash_material = StandardMaterial3D.new()
+		_hit_flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_hit_flash_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_hit_flash_material.albedo_color = Color(1.0, 1.0, 1.0, 0.6)
 
 	muzzle_flash.visible = false
 	alert_label.visible = false
@@ -151,8 +158,7 @@ func take_damage(amount: float, from_position := Vector3.ZERO, hit_position := V
 	if hit_position != Vector3.ZERO and hit_position.y - global_position.y > HEAD_HEIGHT:
 		amount *= headshot_multiplier
 	health -= amount
-	_material.albedo_color = Color.WHITE
-	create_tween().tween_property(_material, "albedo_color", _base_color, 0.15)
+	_flash_hit()
 
 	if health <= 0.0:
 		_die()
@@ -281,6 +287,7 @@ func _die() -> void:
 	velocity = Vector3.ZERO
 	alert_label.visible = false
 	muzzle_flash.visible = false
+	Game.play_sound_at(death_sound, global_position + Vector3.UP, -2.0)
 	_drop_loot()
 
 	# Fall over backwards.
@@ -300,7 +307,7 @@ func _update_perception() -> void:
 		return
 
 	var origin := eyes.global_position
-	var target := _player.global_position + Vector3.UP * 1.4
+	var target := _player.get_aim_point()
 	var to_target := target - origin
 	var distance := to_target.length()
 	if distance > sight_range:
@@ -357,7 +364,7 @@ func _update_shooting(delta: float, to_player: Vector3) -> void:
 
 func _fire_shot() -> void:
 	var origin := muzzle.global_position
-	var target := _player.global_position + Vector3.UP * 1.2
+	var target := _player.get_aim_point() + Vector3.DOWN * 0.15
 	var distance := origin.distance_to(target)
 	var player_speed := Vector2(_player.velocity.x, _player.velocity.z).length()
 	var spread := deg_to_rad(base_spread_degrees + distance * 0.12 + player_speed * 0.5)
@@ -375,6 +382,8 @@ func _fire_shot() -> void:
 			player.take_damage(damage, global_position, end)
 
 	_spawn_tracer(origin, end)
+	Game.play_sound_at(shot_sound, origin, 0.0, 0.08)
+	muzzle_flash_sprite.scale = Vector3.ONE * randf_range(0.8, 1.2)
 	muzzle_flash.visible = true
 	get_tree().create_timer(0.05).timeout.connect(func() -> void: muzzle_flash.visible = false)
 
@@ -470,6 +479,18 @@ func _show_alert(text: String, color: Color, duration: float) -> void:
 		await get_tree().create_timer(duration, false).timeout
 		if alert_label.text == text and state != State.DEAD:
 			alert_label.visible = false
+
+
+## Briefly tints the whole body white.
+func _flash_hit() -> void:
+	_hit_flash_id += 1
+	var flash_id := _hit_flash_id
+	for mesh in _body_meshes:
+		mesh.material_overlay = _hit_flash_material
+	await get_tree().create_timer(0.07, false).timeout
+	if flash_id == _hit_flash_id:
+		for mesh in _body_meshes:
+			mesh.material_overlay = null
 
 
 func _drop_loot() -> void:

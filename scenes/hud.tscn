@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/crosshair.gd" id="2_crosshair"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0, 0, 0, 0.55)
@@ -36,24 +37,15 @@ modulate = Color(1, 1, 1, 0)
 color = Color(1, 0.15, 0.1, 0.85)
 polygon = PackedVector2Array(-80, -160, 0, -178, 80, -160, 0, -138)
 
-[node name="Crosshair" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
+[node name="Crosshair" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 28
-text = "+"
-horizontal_alignment = 1
-vertical_alignment = 1
+mouse_filter = 2
+script = ExtResource("2_crosshair")
 
 [node name="Hitmarker" type="Label" parent="."]
 modulate = Color(1, 1, 1, 0)
@@ -111,6 +103,26 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 40
 text = "30 / 120"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WeaponLabel" type="Label" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -122.0
+offset_right = -40.0
+offset_bottom = -92.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.75)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "RIFLE"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -259,7 +271,9 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.8)
 theme_override_font_sizes/font_size = 20
 text = "WASD / arrows - move      Shift - sprint      Space - jump
-Left click - fire      R - reload
+Ctrl - crouch (hold)      C - crouch (toggle)
+Left click - fire      Right click - aim      R - reload
+1 / 2 / 3 or mouse wheel - switch weapon      Q - last weapon
 Esc - pause      F11 - fullscreen"
 horizontal_alignment = 1
 

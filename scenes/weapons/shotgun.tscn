@@ -1,0 +1,242 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapon.gd" id="1_weapon"]
+[ext_resource type="Texture2D" path="res://assets/textures/muzzle_flash.png" id="2_muzzle_flash"]
+[ext_resource type="AudioStream" path="res://assets/sounds/shotgun_shot.wav" id="3_shotgun_shot"]
+[ext_resource type="AudioStream" path="res://assets/sounds/reload.wav" id="4_reload"]
+[ext_resource type="AudioStream" path="res://assets/sounds/dry_fire.wav" id="5_dry_fire"]
+[ext_resource type="AudioStream" path="res://assets/sounds/shotgun_pump.wav" id="6_shotgun_pump"]
+[ext_resource type="Material" path="res://assets/materials/gunmetal.tres" id="7_gunmetal"]
+[ext_resource type="Material" path="res://assets/materials/brass.tres" id="8_brass"]
+[ext_resource type="Material" path="res://assets/materials/gun_wood.tres" id="9_gun_wood"]
+[ext_resource type="Material" path="res://assets/materials/polymer.tres" id="10_polymer"]
+
+[sub_resource type="StandardMaterial3D" id="flash_material"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("2_muzzle_flash")
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="flash_quad"]
+material = SubResource("flash_material")
+size = Vector2(0.32, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.06, 0.085, 0.26)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2"]
+material = ExtResource("7_gunmetal")
+top_radius = 0.016
+bottom_radius = 0.016
+height = 0.52
+radial_segments = 16
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3"]
+material = ExtResource("7_gunmetal")
+top_radius = 0.014
+bottom_radius = 0.014
+height = 0.42
+radial_segments = 16
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4"]
+material = ExtResource("7_gunmetal")
+top_radius = 0.016
+bottom_radius = 0.016
+height = 0.03
+radial_segments = 16
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_5"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.04, 0.06, 0.02)
+
+[sub_resource type="SphereMesh" id="SphereMesh_6"]
+material = ExtResource("8_brass")
+radius = 0.005
+height = 0.01
+radial_segments = 24
+rings = 12
+
+[sub_resource type="BoxMesh" id="BoxMesh_7"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.008, 0.008, 0.075)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.006, 0.025, 0.008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_9"]
+material = ExtResource("9_gun_wood")
+size = Vector3(0.045, 0.075, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_10"]
+material = ExtResource("9_gun_wood")
+size = Vector3(0.05, 0.11, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_11"]
+material = ExtResource("10_polymer")
+size = Vector3(0.054, 0.12, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_12"]
+material = ExtResource("8_brass")
+size = Vector3(0.002, 0.03, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_13"]
+material = ExtResource("9_gun_wood")
+size = Vector3(0.068, 0.058, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_14"]
+material = ExtResource("10_polymer")
+size = Vector3(0.07, 0.004, 0.012)
+
+[node name="Shotgun" type="Node3D"]
+script = ExtResource("1_weapon")
+weapon_name = "Shotgun"
+damage = 14.0
+pellets = 9
+rounds_per_second = 1.25
+automatic = false
+magazine_size = 6
+reserve_ammo = 24
+max_reserve_ammo = 48
+reload_time = 2.2
+max_range = 60.0
+falloff_start = 8.0
+falloff_end = 25.0
+falloff_min_multiplier = 0.2
+hip_spread_degrees = 5.5
+aim_spread_degrees = 4.0
+spread_per_shot = 0.0
+max_bloom_degrees = 0.0
+moving_spread_degrees = 1.0
+camera_recoil_pitch = 4.0
+camera_recoil_yaw = 0.8
+model_kick = 0.09
+model_pitch_degrees = 10.0
+noise_radius = 45.0
+aim_fov = 65.0
+aim_position = Vector3(0, -0.047, -0.28)
+hip_position = Vector3(0.17, -0.16, -0.36)
+cycle_delay = 0.3
+fire_sound = ExtResource("3_shotgun_shot")
+reload_sound = ExtResource("4_reload")
+empty_sound = ExtResource("5_dry_fire")
+cycle_sound = ExtResource("6_shotgun_pump")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Receiver" type="MeshInstance3D" parent="Model"]
+cast_shadow = 0
+mesh = SubResource("BoxMesh_1")
+
+[node name="Barrel" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.022, -0.39)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_2")
+
+[node name="MagTube" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, -0.018, -0.34)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_3")
+
+[node name="MagCap" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, -0.018, -0.56)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_4")
+
+[node name="BarrelClamp" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, -0.52)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_5")
+
+[node name="BeadSight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.042, -0.63)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_6")
+
+[node name="TriggerGuard" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.07, 0.06)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_7")
+
+[node name="Trigger" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.055, 0.065)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_8")
+
+[node name="Wrist" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.978148, 0.207912, 0, -0.207912, 0.978148, 0, -0.04, 0.17)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="Stock" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, -0.07, 0.33)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_10")
+
+[node name="ButtPad" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, -0.085, 0.46)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_11")
+
+[node name="ShellPort" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.031, 0, -0.02)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_12")
+
+[node name="CyclePart" type="Node3D" parent="Model"]
+
+[node name="Pump" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.018, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_13")
+
+[node name="PumpGroove0" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="PumpGroove1" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.002, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="PumpGroove2" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="PumpGroove3" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.018, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="PumpGroove4" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.026, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="PumpGroove5" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.034, -0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_14")
+
+[node name="Muzzle" type="Marker3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.022, -0.66)
+
+[node name="Flash" type="MeshInstance3D" parent="Model/Muzzle"]
+visible = false
+cast_shadow = 0
+mesh = SubResource("flash_quad")
+
+[node name="Light" type="OmniLight3D" parent="Model/Muzzle"]
+visible = false
+light_color = Color(1, 0.72, 0.38, 1)
+light_energy = 3.0
+omni_range = 5.0

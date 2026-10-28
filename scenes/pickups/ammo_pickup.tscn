@@ -25,7 +25,7 @@ size = Vector3(0.56, 0.06, 0.33)
 [node name="AmmoPickup" type="Area3D"]
 script = ExtResource("1_pickup")
 kind = 1
-amount = 30
+amount = 1
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)

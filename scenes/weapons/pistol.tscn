@@ -1,0 +1,239 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapon.gd" id="1_weapon"]
+[ext_resource type="Texture2D" path="res://assets/textures/muzzle_flash.png" id="2_muzzle_flash"]
+[ext_resource type="AudioStream" path="res://assets/sounds/pistol_shot.wav" id="3_pistol_shot"]
+[ext_resource type="AudioStream" path="res://assets/sounds/reload.wav" id="4_reload"]
+[ext_resource type="AudioStream" path="res://assets/sounds/dry_fire.wav" id="5_dry_fire"]
+[ext_resource type="Material" path="res://assets/materials/polymer.tres" id="6_polymer"]
+[ext_resource type="Material" path="res://assets/materials/gunmetal.tres" id="7_gunmetal"]
+[ext_resource type="Material" path="res://assets/materials/sight_dot.tres" id="8_sight_dot"]
+[ext_resource type="Material" path="res://assets/materials/brass.tres" id="9_brass"]
+
+[sub_resource type="StandardMaterial3D" id="flash_material"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("2_muzzle_flash")
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="flash_quad"]
+material = SubResource("flash_material")
+size = Vector2(0.14, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+material = ExtResource("6_polymer")
+size = Vector3(0.032, 0.028, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2"]
+material = ExtResource("6_polymer")
+size = Vector3(0.032, 0.115, 0.052)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.034, 0.004, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.026, 0.01, 0.045)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5"]
+material = ExtResource("6_polymer")
+size = Vector3(0.008, 0.008, 0.055)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.006, 0.022, 0.007)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_7"]
+material = ExtResource("7_gunmetal")
+top_radius = 0.007
+bottom_radius = 0.007
+height = 0.012
+radial_segments = 16
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_8"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.034, 0.042, 0.19)
+
+[sub_resource type="BoxMesh" id="BoxMesh_9"]
+material = ExtResource("6_polymer")
+size = Vector3(0.036, 0.03, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_10"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.006, 0.012, 0.008)
+
+[sub_resource type="SphereMesh" id="SphereMesh_11"]
+material = ExtResource("8_sight_dot")
+radius = 0.0025
+height = 0.005
+radial_segments = 24
+rings = 12
+
+[sub_resource type="BoxMesh" id="BoxMesh_12"]
+material = ExtResource("7_gunmetal")
+size = Vector3(0.009, 0.012, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_13"]
+material = ExtResource("9_brass")
+size = Vector3(0.002, 0.016, 0.04)
+
+[node name="Pistol" type="Node3D"]
+script = ExtResource("1_weapon")
+weapon_name = "Pistol"
+damage = 32.0
+rounds_per_second = 6.0
+automatic = false
+magazine_size = 12
+reserve_ammo = 60
+max_reserve_ammo = 120
+reload_time = 1.2
+falloff_start = 20.0
+falloff_end = 50.0
+hip_spread_degrees = 1.4
+aim_spread_degrees = 0.2
+spread_per_shot = 0.9
+max_bloom_degrees = 4.0
+camera_recoil_pitch = 1.4
+camera_recoil_yaw = 0.4
+model_kick = 0.04
+model_pitch_degrees = 9.0
+noise_radius = 28.0
+aim_fov = 62.0
+aim_position = Vector3(0, -0.062, -0.3)
+hip_position = Vector3(0.13, -0.14, -0.32)
+fire_sound = ExtResource("3_pistol_shot")
+reload_sound = ExtResource("4_reload")
+empty_sound = ExtResource("5_dry_fire")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Frame" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.002, -0.045)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_1")
+
+[node name="Grip" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.07, 0.03)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_2")
+
+[node name="GripTexture0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.04, 0.022)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_3")
+
+[node name="GripTexture1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.057, 0.026)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_3")
+
+[node name="GripTexture2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.074, 0.03)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_3")
+
+[node name="GripTexture3" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.091, 0.034)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_3")
+
+[node name="GripTexture4" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.108, 0.038)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_3")
+
+[node name="Magazine" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.970296, 0.241922, 0, -0.241922, 0.970296, 0, -0.13, 0.045)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_4")
+
+[node name="TriggerGuard" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.03)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_5")
+
+[node name="Trigger" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.026, -0.02)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_6")
+
+[node name="BarrelTip" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.032, -0.152)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_7")
+
+[node name="CyclePart" type="Node3D" parent="Model"]
+
+[node name="Slide" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, -0.05)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_8")
+
+[node name="Serration0" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.02)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="Serration1" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.03)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="Serration2" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.04)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="Serration3" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.05)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="Serration4" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.06)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_9")
+
+[node name="FrontSight" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.059, -0.135)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_10")
+
+[node name="FrontDot" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.062, -0.13)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_11")
+
+[node name="RearSightL" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, 0.059, 0.035)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_12")
+
+[node name="RearSightR" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, 0.059, 0.035)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_12")
+
+[node name="EjectionPort" type="MeshInstance3D" parent="Model/CyclePart"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.018, 0.04, -0.03)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_13")
+
+[node name="Muzzle" type="Marker3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, -0.16)
+
+[node name="Flash" type="MeshInstance3D" parent="Model/Muzzle"]
+visible = false
+cast_shadow = 0
+mesh = SubResource("flash_quad")
+
+[node name="Light" type="OmniLight3D" parent="Model/Muzzle"]
+visible = false
+light_color = Color(1, 0.72, 0.38, 1)
+light_energy = 3.0
+omni_range = 5.0

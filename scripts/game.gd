@@ -1,6 +1,6 @@
 extends Node
 ## Global game services (autoloaded as `Game`): default input bindings,
-## pausing, restarting, gunfire noise and HUD messages.
+## pausing, restarting, noise events, HUD messages and one-shot sounds.
 
 signal paused_changed(paused: bool)
 ## Emitted when something loud happens, e.g. the player firing. Enemies within
@@ -17,12 +17,21 @@ const DEFAULT_KEYS := {
 	"move_right": [KEY_D, KEY_RIGHT],
 	"jump": [KEY_SPACE],
 	"sprint": [KEY_SHIFT],
+	"crouch": [KEY_CTRL],
+	"crouch_toggle": [KEY_C],
 	"reload": [KEY_R],
+	"weapon_1": [KEY_1],
+	"weapon_2": [KEY_2],
+	"weapon_3": [KEY_3],
+	"last_weapon": [KEY_Q],
 	"pause": [KEY_ESCAPE],
 	"toggle_fullscreen": [KEY_F11],
 }
 const DEFAULT_MOUSE_BUTTONS := {
 	"fire": [MOUSE_BUTTON_LEFT],
+	"aim": [MOUSE_BUTTON_RIGHT],
+	"next_weapon": [MOUSE_BUTTON_WHEEL_DOWN],
+	"previous_weapon": [MOUSE_BUTTON_WHEEL_UP],
 }
 
 
@@ -66,6 +75,36 @@ func make_noise(position: Vector3, radius: float) -> void:
 
 func post_message(text: String) -> void:
 	message_posted.emit(text)
+
+
+## Plays a non-positional sound (the player's own gun, UI, ...).
+func play_sound(stream: AudioStream, volume_db := 0.0, pitch_variation := 0.05) -> void:
+	if stream == null:
+		return
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	player.volume_db = volume_db
+	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
+
+
+## Plays a sound at a point in the world (enemy gunfire, impacts, ...).
+func play_sound_at(stream: AudioStream, at: Vector3, volume_db := 0.0, pitch_variation := 0.05, max_distance := 80.0) -> void:
+	var scene := get_tree().current_scene
+	if stream == null or scene == null:
+		return
+	var player := AudioStreamPlayer3D.new()
+	player.stream = stream
+	player.volume_db = volume_db
+	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
+	player.max_distance = max_distance
+	player.unit_size = 6.0
+	player.position = at
+	scene.add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
 
 
 func _toggle_fullscreen() -> void:

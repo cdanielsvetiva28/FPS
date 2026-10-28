@@ -10,16 +10,9 @@ var _can_restart := false
 
 
 func _ready() -> void:
-	var weapon := player.weapon
-	weapon.ammo_changed.connect(hud.set_ammo)
-	weapon.reload_state_changed.connect(hud.set_reloading)
-	weapon.hit_confirmed.connect(hud.show_hitmarker)
-	player.health_changed.connect(hud.set_health)
+	hud.bind_player(player)
 	player.damaged.connect(_on_player_damaged)
 	player.died.connect(_on_player_died)
-	# These were emitted before we connected, so sync once here.
-	hud.set_ammo(weapon.ammo_in_magazine, weapon.reserve_ammo)
-	hud.set_health(player.health, player.max_health)
 
 	for node in get_tree().get_nodes_in_group("enemies"):
 		(node as Enemy).died.connect(_on_enemy_died)

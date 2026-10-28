@@ -5,7 +5,10 @@ extends Area3D
 
 enum Kind { HEALTH, AMMO }
 
+const PICKUP_SOUND := preload("res://assets/sounds/pickup.wav")
+
 @export var kind := Kind.HEALTH
+## Health restored, or (for ammo) magazines given to every weapon.
 @export var amount := 30
 
 @onready var visual: Node3D = $Visual
@@ -34,9 +37,11 @@ func _give_to(player: Player) -> bool:
 		Kind.HEALTH:
 			if player.heal(amount):
 				Game.post_message("+%d health" % amount)
+				Game.play_sound(PICKUP_SOUND, -4.0)
 				return true
 		Kind.AMMO:
-			if player.weapon.add_ammo(amount):
-				Game.post_message("+%d ammo" % amount)
+			if player.weapons.add_ammo_magazines(amount):
+				Game.post_message("+ammo")
+				Game.play_sound(PICKUP_SOUND, -4.0)
 				return true
 	return false

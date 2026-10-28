@@ -1,71 +1,275 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
+[ext_resource type="AudioStream" path="res://assets/sounds/enemy_shot.wav" id="2_enemy_shot"]
+[ext_resource type="AudioStream" path="res://assets/sounds/enemy_death.wav" id="3_enemy_death"]
+[ext_resource type="Texture2D" path="res://assets/textures/muzzle_flash.png" id="4_muzzle_flash"]
+[ext_resource type="Material" path="res://assets/materials/enemy_fatigues.tres" id="5_enemy_fatigues"]
+[ext_resource type="Material" path="res://assets/materials/enemy_vest.tres" id="6_enemy_vest"]
+[ext_resource type="Material" path="res://assets/materials/enemy_boots.tres" id="7_enemy_boots"]
+[ext_resource type="Material" path="res://assets/materials/enemy_skin.tres" id="8_enemy_skin"]
+[ext_resource type="Material" path="res://assets/materials/enemy_helmet.tres" id="9_enemy_helmet"]
+[ext_resource type="Material" path="res://assets/materials/enemy_visor.tres" id="10_enemy_visor"]
+[ext_resource type="Material" path="res://assets/materials/gunmetal.tres" id="11_gunmetal"]
+[ext_resource type="Material" path="res://assets/materials/polymer.tres" id="12_polymer"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+[sub_resource type="CapsuleShape3D" id="body_shape"]
 radius = 0.4
 height = 1.8
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uniform"]
-albedo_color = Color(0.24, 0.27, 0.23, 1)
-roughness = 0.8
+[sub_resource type="StandardMaterial3D" id="flash_material"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_muzzle_flash")
+billboard_mode = 1
+billboard_keep_scale = true
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_torso"]
-material = SubResource("StandardMaterial3D_uniform")
-radius = 0.32
-height = 1.45
+[sub_resource type="QuadMesh" id="flash_quad"]
+material = SubResource("flash_material")
+size = Vector2(0.35, 0.35)
 
-[sub_resource type="SphereMesh" id="SphereMesh_head"]
-material = SubResource("StandardMaterial3D_uniform")
-radius = 0.19
-height = 0.38
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+material = ExtResource("5_enemy_fatigues")
+radius = 0.085
+height = 0.82
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
-albedo_color = Color(1, 0.15, 0.1, 1)
-emission_enabled = true
-emission = Color(1, 0.1, 0.05, 1)
-emission_energy_multiplier = 2.0
+[sub_resource type="BoxMesh" id="BoxMesh_2"]
+material = ExtResource("6_enemy_vest")
+size = Vector3(0.12, 0.1, 0.05)
 
-[sub_resource type="BoxMesh" id="BoxMesh_visor"]
-material = SubResource("StandardMaterial3D_visor")
-size = Vector3(0.28, 0.07, 0.08)
+[sub_resource type="BoxMesh" id="BoxMesh_3"]
+material = ExtResource("7_enemy_boots")
+size = Vector3(0.13, 0.1, 0.25)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gun"]
-albedo_color = Color(0.1, 0.1, 0.11, 1)
-metallic = 0.5
-roughness = 0.5
+[sub_resource type="BoxMesh" id="BoxMesh_4"]
+material = ExtResource("6_enemy_vest")
+size = Vector3(0.36, 0.07, 0.24)
 
-[sub_resource type="BoxMesh" id="BoxMesh_gun"]
-material = SubResource("StandardMaterial3D_gun")
-size = Vector3(0.08, 0.1, 0.55)
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_5"]
+material = ExtResource("5_enemy_fatigues")
+radius = 0.18
+height = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_6"]
+material = ExtResource("6_enemy_vest")
+size = Vector3(0.42, 0.42, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7"]
+material = ExtResource("6_enemy_vest")
+size = Vector3(0.1, 0.12, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8"]
+material = ExtResource("5_enemy_fatigues")
+size = Vector3(0.34, 0.36, 0.14)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_9"]
+material = ExtResource("8_enemy_skin")
+radius = 0.06
+height = 0.16
+
+[sub_resource type="SphereMesh" id="SphereMesh_10"]
+material = ExtResource("8_enemy_skin")
+radius = 0.12
+height = 0.24
+radial_segments = 24
+rings = 12
+
+[sub_resource type="SphereMesh" id="SphereMesh_11"]
+material = ExtResource("9_enemy_helmet")
+radius = 0.15
+height = 0.3
+radial_segments = 24
+rings = 12
+
+[sub_resource type="BoxMesh" id="BoxMesh_12"]
+material = ExtResource("10_enemy_visor")
+size = Vector3(0.2, 0.045, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_13"]
+material = ExtResource("7_enemy_boots")
+size = Vector3(0.16, 0.08, 0.06)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_14"]
+material = ExtResource("5_enemy_fatigues")
+radius = 0.065
+height = 0.34
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_15"]
+material = ExtResource("5_enemy_fatigues")
+radius = 0.055
+height = 0.22
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_16"]
+material = ExtResource("5_enemy_fatigues")
+radius = 0.055
+height = 0.43
+
+[sub_resource type="SphereMesh" id="SphereMesh_17"]
+material = ExtResource("7_enemy_boots")
+radius = 0.045
+height = 0.09
+radial_segments = 24
+rings = 12
+
+[sub_resource type="BoxMesh" id="BoxMesh_18"]
+material = ExtResource("11_gunmetal")
+size = Vector3(0.06, 0.085, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_19"]
+material = ExtResource("12_polymer")
+size = Vector3(0.065, 0.07, 0.24)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_20"]
+material = ExtResource("11_gunmetal")
+top_radius = 0.012
+bottom_radius = 0.012
+height = 0.16
+radial_segments = 16
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_21"]
+material = ExtResource("12_polymer")
+size = Vector3(0.04, 0.15, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_22"]
+material = ExtResource("12_polymer")
+size = Vector3(0.045, 0.08, 0.2)
 
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("1_enemy")
+shot_sound = ExtResource("2_enemy_shot")
+death_sound = ExtResource("3_enemy_death")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("CapsuleShape3D_body")
+shape = SubResource("body_shape")
 
 [node name="Body" type="Node3D" parent="."]
 
+[node name="LegL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.47, 0)
+mesh = SubResource("CapsuleMesh_1")
+
+[node name="KneePadL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.5, -0.07)
+mesh = SubResource("BoxMesh_2")
+
+[node name="BootL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.05, -0.04)
+mesh = SubResource("BoxMesh_3")
+
+[node name="LegR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.47, 0)
+mesh = SubResource("CapsuleMesh_1")
+
+[node name="KneePadR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.5, -0.07)
+mesh = SubResource("BoxMesh_2")
+
+[node name="BootR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.05, -0.04)
+mesh = SubResource("BoxMesh_3")
+
+[node name="Belt" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("BoxMesh_4")
+
 [node name="Torso" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.725, 0)
-mesh = SubResource("CapsuleMesh_torso")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+mesh = SubResource("CapsuleMesh_5")
+
+[node name="Vest" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+mesh = SubResource("BoxMesh_6")
+
+[node name="Pouch0" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 1.12, -0.16)
+mesh = SubResource("BoxMesh_7")
+
+[node name="Pouch1" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, -0.16)
+mesh = SubResource("BoxMesh_7")
+
+[node name="Pouch2" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 1.12, -0.16)
+mesh = SubResource("BoxMesh_7")
+
+[node name="Backpack" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0.2)
+mesh = SubResource("BoxMesh_8")
+
+[node name="Neck" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.48, 0)
+mesh = SubResource("CapsuleMesh_9")
 
 [node name="Head" type="MeshInstance3D" parent="Body"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
-mesh = SubResource("SphereMesh_head")
+mesh = SubResource("SphereMesh_10")
+
+[node name="Helmet" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.75, 0, 0, 0, 1.05, 0, 1.665, 0.01)
+mesh = SubResource("SphereMesh_11")
 
 [node name="Visor" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.16)
-mesh = SubResource("BoxMesh_visor")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.11)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_12")
 
-[node name="Gun" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 1.2, -0.35)
-mesh = SubResource("BoxMesh_gun")
+[node name="Mask" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.53, -0.09)
+mesh = SubResource("BoxMesh_13")
+
+[node name="UpperArmR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.984808, -0.173648, 0, 0.111619, 0.633022, -0.766044, 0.133022, 0.754407, 0.642788, 0.24, 1.31, -0.12)
+mesh = SubResource("CapsuleMesh_14")
+
+[node name="ForearmR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.819152, -0.573576, 0, 0, 0, 1, -0.573576, -0.819152, 0, 0.185, 1.2, -0.34)
+mesh = SubResource("CapsuleMesh_15")
+
+[node name="UpperArmL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.984808, 0.173648, 0, -0.099601, 0.564863, -0.819152, -0.142244, 0.806707, 0.573576, -0.21, 1.31, -0.12)
+mesh = SubResource("CapsuleMesh_14")
+
+[node name="ForearmL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.788011, 0.615661, 0, 0, 0, 1, 0.615661, -0.788011, 0, -0.065, 1.22, -0.43)
+mesh = SubResource("CapsuleMesh_16")
+
+[node name="HandR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 1.17, -0.4)
+mesh = SubResource("SphereMesh_17")
+
+[node name="HandL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 1.24, -0.6)
+mesh = SubResource("SphereMesh_17")
+
+[node name="Gun" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 1.25, -0.5)
+
+[node name="Receiver" type="MeshInstance3D" parent="Body/Gun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+mesh = SubResource("BoxMesh_18")
+
+[node name="Handguard" type="MeshInstance3D" parent="Body/Gun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.22)
+mesh = SubResource("BoxMesh_19")
+
+[node name="Barrel" type="MeshInstance3D" parent="Body/Gun"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.01, -0.42)
+mesh = SubResource("CylinderMesh_20")
+
+[node name="Magazine" type="MeshInstance3D" parent="Body/Gun"]
+transform = Transform3D(1, 0, 0, 0, 0.978148, -0.207912, 0, 0.207912, 0.978148, 0, -0.1, -0.02)
+mesh = SubResource("BoxMesh_21")
+
+[node name="Stock" type="MeshInstance3D" parent="Body/Gun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.3)
+mesh = SubResource("BoxMesh_22")
 
 [node name="Muzzle" type="Marker3D" parent="Body/Gun"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.52)
 
 [node name="MuzzleFlash" type="OmniLight3D" parent="Body/Gun/Muzzle"]
 visible = false
@@ -73,11 +277,15 @@ light_color = Color(1, 0.75, 0.4, 1)
 light_energy = 4.0
 omni_range = 4.0
 
+[node name="Flash" type="MeshInstance3D" parent="Body/Gun/Muzzle/MuzzleFlash"]
+cast_shadow = 0
+mesh = SubResource("flash_quad")
+
 [node name="Eyes" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.12)
 
 [node name="AlertLabel" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
 visible = false
 billboard = 1
 no_depth_test = true

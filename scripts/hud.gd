@@ -3,6 +3,11 @@ extends CanvasLayer
 ## Heads-up display: crosshair, hit marker, ammo, health, damage feedback,
 ## objective, messages, and the pause and death screens.
 
+const HIT_SOUND := preload("res://assets/sounds/hitmarker.wav")
+const KILL_SOUND := preload("res://assets/sounds/kill_confirm.wav")
+
+@onready var crosshair: Control = $Crosshair
+@onready var weapon_label: Label = $WeaponLabel
 @onready var ammo_label: Label = $AmmoLabel
 @onready var reload_label: Label = $ReloadLabel
 @onready var hitmarker: Label = $Hitmarker
@@ -37,6 +42,21 @@ func _process(_delta: float) -> void:
 	damage_indicator.position = get_viewport().get_visible_rect().size * 0.5
 
 
+## Connects the HUD to the player and their weapons.
+func bind_player(player: Player) -> void:
+	crosshair.set("player", player)
+	var weapons := player.weapons
+	weapons.ammo_changed.connect(set_ammo)
+	weapons.reload_state_changed.connect(set_reloading)
+	weapons.hit_confirmed.connect(show_hitmarker)
+	weapons.weapon_changed.connect(_on_weapon_changed)
+	player.health_changed.connect(set_health)
+	# These were emitted before we connected, so sync once here.
+	_on_weapon_changed(weapons.current)
+	set_ammo(weapons.current.ammo_in_magazine, weapons.current.reserve_ammo)
+	set_health(player.health, player.max_health)
+
+
 func set_ammo(in_magazine: int, reserve: int) -> void:
 	ammo_label.text = "%d / %d" % [in_magazine, reserve]
 
@@ -61,6 +81,7 @@ func set_objective(text: String) -> void:
 
 func show_hitmarker(killed: bool) -> void:
 	hitmarker.modulate = Color(1.0, 0.25, 0.25) if killed else Color.WHITE
+	Game.play_sound(KILL_SOUND if killed else HIT_SOUND, -6.0, 0.03)
 	if _hitmarker_tween:
 		_hitmarker_tween.kill()
 	_hitmarker_tween = create_tween()
@@ -112,6 +133,10 @@ func show_death_screen() -> void:
 
 func show_restart_hint() -> void:
 	restart_label.visible = true
+
+
+func _on_weapon_changed(weapon: Weapon) -> void:
+	weapon_label.text = weapon.weapon_name.to_upper()
 
 
 func _on_paused_changed(paused: bool) -> void:
